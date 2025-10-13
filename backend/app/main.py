@@ -35,6 +35,24 @@ async def lifespan(app: FastAPI):
     """Application lifespan management"""
     # Startup
     try:
+        hsm_type = os.getenv('HSM_TYPE', 'software_fallback')
+        environment = os.getenv('ENVIRONMENT', 'testing')
+        
+        if environment == 'production' and hsm_type in ['software', 'software_fallback']:
+            logger.critical("❌ PRODUCTION ENVIRONMENT DETECTED WITH SOFTWARE HSM")
+            logger.critical("❌ Software HSM is NOT ALLOWED in production environments")
+            logger.critical(f"❌ Current HSM type: {hsm_type}")
+            logger.critical("❌ Please configure PKCS#11 or Azure Key Vault for production")
+            raise ValueError(
+                "CRITICAL: Software HSM cannot be used in production. "
+                "Configure HSM_TYPE to 'pkcs11' or 'azure_keyvault' for production deployment."
+            )
+        
+        if environment == 'production':
+            logger.info(f"✅ Production environment validated with HSM type: {hsm_type}")
+        else:
+            logger.info(f"✅ {environment.capitalize()} environment started with HSM type: {hsm_type}")
+        
         logger.info("Sistema Judicial Digital iniciado correctamente")
     except Exception as e:
         logger.error(f"Error during startup: {e}")
