@@ -1,0 +1,413 @@
+version: '3.8'
+
+services:
+  # Load Balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - app1
+      - app2
+      - app3
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Application instances (horizontal scaling)
+  app1:
+    build: ./backend
+    environment:
+      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
+      - REDIS_URL=redis://redis:6379/0
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - SERVER_ID=app-1
+      - DEBUG=false
+      - ENVIRONMENT=production
+      - HSM_TYPE=software_fallback
+      - OCR_LANGUAGES=ara+fra+spa
+      - DEFAULT_LANGUAGE=ar
+      - MOROCCO_TIMEZONE=Africa/Casablanca
+      - ENABLE_AUDIT_LOGGING=true
+      - ENABLE_MONITORING=true
+    depends_on:
+      - db
+      - redis
+      - elasticsearch
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '0.75'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  app2:
+    build: ./backend
+    environment:
+      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
+      - REDIS_URL=redis://redis:6379/0
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - SERVER_ID=app-2
+      - DEBUG=false
+      - ENVIRONMENT=production
+      - HSM_TYPE=software_fallback
+      - OCR_LANGUAGES=ara+fra+spa
+      - DEFAULT_LANGUAGE=ar
+      - MOROCCO_TIMEZONE=Africa/Casablanca
+      - ENABLE_AUDIT_LOGGING=true
+      - ENABLE_MONITORING=true
+    depends_on:
+      - db
+      - redis
+      - elasticsearch
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '0.75'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  app3:
+    build: ./backend
+    environment:
+      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
+      - REDIS_URL=redis://redis:6379/0
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - SERVER_ID=app-3
+      - DEBUG=false
+      - ENVIRONMENT=production
+      - HSM_TYPE=software_fallback
+      - OCR_LANGUAGES=ara+fra+spa
+      - DEFAULT_LANGUAGE=ar
+      - MOROCCO_TIMEZONE=Africa/Casablanca
+      - ENABLE_AUDIT_LOGGING=true
+      - ENABLE_MONITORING=true
+    depends_on:
+      - db
+      - redis
+      - elasticsearch
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+          cpus: '0.75'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database optimized for Morocco judicial system
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=justicia_db
+      - POSTGRES_USER=justicia
+      - POSTGRES_PASSWORD=JusticiaPassword2024!
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=en_US.UTF-8
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U justicia -d justicia_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --save 60 1000 --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Elasticsearch for search with Arabic support
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - cluster.name=justicia-morocco-cluster
+      - node.name=justicia-node-1
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery worker for CPU-intensive tasks (OCR, document processing)
+  celery-cpu:
+    build: ./backend
+    command: celery -A backend.app.celery.celery worker -Q cpu_intensive --concurrency=2 --loglevel=info --max-tasks-per-child=100
+    environment:
+      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - OCR_LANGUAGES=ara+fra+spa
+      - TESSERACT_CMD=/usr/bin/tesseract
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Celery worker for I/O bound tasks
+  celery-io:
+    build: ./backend
+    command: celery -A backend.app.celery.celery worker -Q io_bound --concurrency=4 --loglevel=info --max-tasks-per-child=200
+    environment:
+      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Celery worker for HSM operations
+  celery-hsm:
+    build: ./backend
+    command: celery -A backend.app.celery.celery worker -Q hsm_operations --concurrency=1 --loglevel=info --max-tasks-per-child=50
+    environment:
+      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - HSM_TYPE=software_fallback
+      # For production HSM, add:
+      # - HSM_LIBRARY_PATH=/usr/lib/hsm/libhsm.so
+      # - HSM_PIN=your-hsm-pin
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+      - ./hsm:/app/hsm
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.25'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Celery Beat for scheduled tasks
+  celery-beat:
+    build: ./backend
+    command: celery -A backend.app.celery.celery beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.1'
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Monitoring with Redis Commander
+  redis-commander:
+    image: rediscommander/redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Elasticsearch Head for monitoring
+  elasticsearch-head:
+    image: mobz/elasticsearch-head:5
+    ports:
+      - "9100:9100"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Flower for Celery monitoring
+  flower:
+    build: ./backend
+    command: celery -A backend.app.celery.celery flower --port=5555
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+  # Grafana for monitoring (optional)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - justicia-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  justicia-network:
+    driver: bridge
