@@ -51,11 +51,9 @@ const LanguageSelector = () => {
     setAnchorEl(null);
   };
 
-  const handleLanguageChange = (languageCode, dir) => {
+  const handleLanguageChange = (languageCode) => {
     i18n.changeLanguage(languageCode);
     localStorage.setItem('language', languageCode);
-    document.documentElement.dir = dir;
-    document.documentElement.lang = languageCode;
     handleClose();
   };
 
@@ -103,7 +101,7 @@ const LanguageSelector = () => {
         {languages.map((language) => (
           <MenuItem
             key={language.code}
-            onClick={() => handleLanguageChange(language.code, language.dir)}
+            onClick={() => handleLanguageChange(language.code)}
             selected={i18n.language === language.code}
             sx={{
               py: 1.5,
