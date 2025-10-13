@@ -111,9 +111,8 @@ def get_db_session():
 def check_db_health() -> bool:
     """Verificar salud de la conexión a base de datos"""
     try:
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
         return True
     except Exception as e:
         logger.error(f"Database health check failed: {e}")

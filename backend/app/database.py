@@ -1,6 +1,6 @@
 # backend/app/database.py - Base de Datos Simplificada
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 import logging
@@ -39,9 +39,8 @@ def get_db():
 def check_db_health() -> bool:
     """Verificar salud de la base de datos"""
     try:
-        db = SessionLocal()
-        db.execute("SELECT 1")
-        db.close()
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
         return True
     except Exception as e:
         logger.error(f"Database health check failed: {e}")

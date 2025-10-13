@@ -1,5 +1,23 @@
 # Sistema Judicial Digital - Marruecos
 
+## Recent Changes
+**October 13, 2025 - Security Updates**
+- Updated security-critical dependencies in response to security scan:
+  - `cryptography`: 41.0.7 → 46.0.2 (major security update)
+  - `pillow`: 10.1.0 → 11.3.0 (security update)
+  - `python-jose`: 3.3.0 → 3.5.0 (security update)
+  - `sqlalchemy`: 2.0.23 → 2.0.44 (minor security update with API changes)
+  - `vite`: 5.0.8 (frontend - already updated)
+- Fixed SQLAlchemy 2.0 compatibility:
+  - Updated database health check to use `engine.connect()` context manager
+  - Replaced deprecated `db.execute()` with `connection.execute(text())`
+  - All database operations now use SQLAlchemy 2.0 API patterns
+- Removed duplicate `python-multipart` entry from requirements.txt
+- Commented out unused ML/NLP packages (sentence-transformers, torch, transformers) - install if semantic search is needed
+- Commented out unused packages (aiohttp, gunicorn, orjson) - not required for current functionality
+- Fixed type hint in JWT authentication module for better type safety
+- All critical functionality tested and verified working (auth, file uploads, API endpoints, database health checks)
+
 ## Overview
 This project is a comprehensive digital judicial system for Morocco, aiming to modernize the country's legal infrastructure. It features a FastAPI backend and a React frontend with Material-UI, designed for government use. Key capabilities include secure case management with JWT authentication, robust role-based access control (RBAC), multi-language support (Spanish, French, Arabic, including RTL), and a modern, intuitive user interface. The system streamlines judicial processes, enhances efficiency, and ensures secure access to legal information, fully compliant with Moroccan legal requirements (Ley 09-08, Ley 53-05). The project is production-ready, with extensive testing, Docker-based deployment, automated backups, and comprehensive documentation.
 

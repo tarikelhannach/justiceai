@@ -12,7 +12,8 @@ class TestDatabaseIntegration:
     
     def test_database_connection(self, db_session: Session):
         """Test conexión exitosa a la base de datos."""
-        result = db_session.execute("SELECT 1").scalar()
+        from sqlalchemy import text
+        result = db_session.execute(text("SELECT 1")).scalar()
         assert result == 1
     
     def test_create_and_retrieve_user(self, db_session: Session):
