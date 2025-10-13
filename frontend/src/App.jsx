@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -8,6 +8,7 @@ import Layout from './components/Layout';
 import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
 import { CircularProgress, Box } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -31,12 +32,19 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppContent() {
+  const { i18n } = useTranslation();
   const [mode, setMode] = useState(() => {
     const savedMode = localStorage.getItem('themeMode');
     return savedMode || 'light';
   });
 
-  const theme = useMemo(() => createAppTheme(mode), [mode]);
+  const direction = i18n.language === 'ar' ? 'rtl' : 'ltr';
+  const theme = useMemo(() => createAppTheme(mode, direction), [mode, direction]);
+
+  useEffect(() => {
+    document.documentElement.dir = direction;
+    document.documentElement.lang = i18n.language;
+  }, [direction, i18n.language]);
 
   const toggleTheme = () => {
     setMode((prevMode) => {

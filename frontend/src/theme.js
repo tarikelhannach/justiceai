@@ -199,4 +199,7 @@ export const getDesignTokens = (mode) => ({
   },
 });
 
-export const createAppTheme = (mode) => createTheme(getDesignTokens(mode));
+export const createAppTheme = (mode, direction = 'ltr') => createTheme({
+  ...getDesignTokens(mode),
+  direction,
+});
