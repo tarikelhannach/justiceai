@@ -147,6 +147,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
+              onClick={() => navigate(item.path)}
               sx={{
                 borderRadius: 2,
                 '&:hover': {
