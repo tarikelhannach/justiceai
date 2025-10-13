@@ -23,8 +23,10 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
+  const { t } = useTranslation();
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -80,12 +82,12 @@ const Login = () => {
     setError('');
 
     if (registerForm.password !== registerForm.confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setError(t('auth.passwordsNotMatch'));
       return;
     }
 
     if (registerForm.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
@@ -140,8 +142,8 @@ const Login = () => {
             centered
             sx={{ mb: 3 }}
           >
-            <Tab label="Iniciar Sesión" />
-            <Tab label="Registrarse" />
+            <Tab label={t('auth.login')} />
+            <Tab label={t('auth.register')} />
           </Tabs>
 
           {error && (
@@ -154,7 +156,7 @@ const Login = () => {
             <form onSubmit={handleLogin}>
               <TextField
                 fullWidth
-                label="Correo Electrónico"
+                label={t('auth.email')}
                 name="email"
                 type="email"
                 value={loginForm.email}
@@ -172,7 +174,7 @@ const Login = () => {
               
               <TextField
                 fullWidth
-                label="Contraseña"
+                label={t('auth.password')}
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 value={loginForm.password}
@@ -212,14 +214,14 @@ const Login = () => {
                   },
                 }}
               >
-                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                {loading ? t('common.loading') : t('auth.loginButton')}
               </Button>
             </form>
           ) : (
             <form onSubmit={handleRegister}>
               <TextField
                 fullWidth
-                label="Nombre Completo"
+                label={t('auth.name')}
                 name="name"
                 value={registerForm.name}
                 onChange={handleRegisterChange}
@@ -236,7 +238,7 @@ const Login = () => {
               
               <TextField
                 fullWidth
-                label="Correo Electrónico"
+                label={t('auth.email')}
                 name="email"
                 type="email"
                 value={registerForm.email}
@@ -254,7 +256,7 @@ const Login = () => {
               
               <TextField
                 fullWidth
-                label="Contraseña"
+                label={t('auth.password')}
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 value={registerForm.password}
@@ -282,7 +284,7 @@ const Login = () => {
               
               <TextField
                 fullWidth
-                label="Confirmar Contraseña"
+                label={t('auth.confirmPassword')}
                 name="confirmPassword"
                 type={showPassword ? 'text' : 'password'}
                 value={registerForm.confirmPassword}
@@ -312,7 +314,7 @@ const Login = () => {
                   },
                 }}
               >
-                {loading ? 'Registrando...' : 'Registrarse'}
+                {loading ? t('common.loading') : t('auth.registerButton')}
               </Button>
             </form>
           )}
@@ -321,13 +323,13 @@ const Login = () => {
 
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="caption" color="text.secondary">
-              Usuarios de prueba:
+              {t('auth.demoCredentials')}:
             </Typography>
             <Typography variant="caption" display="block" color="text.secondary">
               admin@justicia.ma | juez@justicia.ma | abogado@justicia.ma
             </Typography>
             <Typography variant="caption" display="block" color="text.secondary">
-              Contraseña: [rol]123 (ej: admin123, juez123, etc.)
+              {t('auth.password')}: [rol]123 (ej: admin123, juez123, etc.)
             </Typography>
           </Box>
         </Paper>
