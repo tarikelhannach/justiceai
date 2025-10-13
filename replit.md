@@ -58,6 +58,12 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 - **Rate Limiting**: `slowapi`
 - **Caching**: `redis`
 
+### Pending Integrations
+- **Email Service (Password Reset)**: Currently password reset tokens are generated but emails are not sent. To enable email sending, configure one of:
+  - Resend integration (connector:ccfg_resend_01K69QKYK789WN202XSE3QS17V)
+  - SendGrid integration (connector:ccfg_sendgrid_01K69QKAPBPJ4SWD8GQHGY03D5)
+  - Or provide SMTP credentials as secrets
+
 ### Frontend
 - **Framework**: `react`, `react-dom`, `vite`
 - **UI Library**: `@mui/material`, `@emotion/react`, `@emotion/styled`, `@mui/icons-material`
