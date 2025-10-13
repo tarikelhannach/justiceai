@@ -1,0 +1,872 @@
+# 🏛️ JusticeAI - Sistema Judicial Digital Marruecos
+## Análisis Profesional & Debuggeo Completo
+
+---
+
+## 📊 Resumen Ejecutivo
+
+**JusticeAI** es una plataforma **gubernamental de nivel enterprise** para digitalizar procesos judiciales en Marruecos.
+
+### Complejidad: ⭐⭐⭐⭐⭐ (5/5)
+- **Stack**: FastAPI + React 18 + PostgreSQL + Elasticsearch + Celery + Redis + Docker
+- **Usuarios**: 5 roles diferentes (Admin, Judge, Lawyer, Clerk, Citizen)
+- **Escalabilidad**: Multi-instancia con load balancer (Nginx)
+- **Seguridad**: HSM, JWT, RBAC, Audit logging, Compliance legal
+
+### Estado del Proyecto
+✅ Estructura profesional
+✅ Documentación gubernamental
+⚠️ Múltiples puntos de fallo potenciales
+⚠️ Complejidad de integraciones
+
+---
+
+## 🔴 BUGS CRÍTICOS IDENTIFICADOS
+
+### 1. **CRÍTICO: Falta de manejo de sincronización entre servicios**
+
+**Problema**: 
+```
+Con 3+ instancias FastAPI + Redis + Elasticsearch + Celery + PostgreSQL:
+- Race conditions en actualizaciones de casos
+- Inconsistencia entre índices de ES y datos DB
+- Cola Celery puede no procesar OCR en orden
+- Redis cache no se invalida correctamente
+```
+
+**Impacto**: Datos judiciales corruptos = inaceptable en gobierno
+
+**Solución**:
+```python
+# backend/app/core/cache.py - NUEVO
+from redis import Redis
+from typing import Optional, Callable, Any
+import json
+from functools import wraps
+
+class CacheManager:
+    def __init__(self, redis_client: Redis):
+        self.redis = redis_client
+    
+    async def invalidate_pattern(self, pattern: str):
+        """Invalidar todas las keys que coincidan"""
+        keys = self.redis.keys(pattern)
+        if keys:
+            self.redis.delete(*keys)
+    
+    async def invalidate_case(self, case_id: str):
+        """Invalidar cache de caso específico"""
+        await self.invalidate_pattern(f"case:{case_id}:*")
+        await self.invalidate_pattern(f"judge:{case_id}:*")
+    
+    def cached(self, ttl: int = 3600):
+        """Decorator para cacheo consistente"""
+        def decorator(func: Callable) -> Callable:
+            @wraps(func)
+            async def wrapper(*args, **kwargs) -> Any:
+                cache_key = f"{func.__name__}:{str(args)}:{str(kwargs)}"
+                
+                # Intentar obtener del cache
+                cached_value = self.redis.get(cache_key)
+                if cached_value:
+                    return json.loads(cached_value)
+                
+                # Ejecutar función
+                result = await func(*args, **kwargs)
+                
+                # Guardar en cache
+                self.redis.setex(cache_key, ttl, json.dumps(result))
+                return result
+            
+            return wrapper
+        return decorator
+
+# backend/app/api/routes/cases.py - MEJORADO
+from app.core.cache import CacheManager
+
+@router.put("/cases/{case_id}/status")
+async def update_case_status(
+    case_id: str,
+    status_update: CaseStatusUpdate,
+    current_user: User = Depends(get_current_user),
+    cache_manager: CacheManager = Depends(get_cache_manager),
+    db: Session = Depends(get_db)
+):
+    try:
+        # 1. Actualizar en DB
+        case = db.query(Case).filter(Case.id == case_id).first()
+        if not case:
+            raise HTTPException(status_code=404, detail="Caso no encontrado")
+        
+        # 2. Validar RBAC
+        verify_case_access(case, current_user)
+        
+        # 3. Actualizar
+        old_status = case.status
+        case.status = status_update.status
+        case.updated_at = datetime.utcnow()
+        
+        # 4. Crear audit log ANTES de commit
+        audit_log = AuditLog(
+            user_id=current_user.id,
+            action="CASE_STATUS_UPDATED",
+            resource_type="case",
+            resource_id=case_id,
+            details={
+                "old_status": old_status,
+                "new_status": status_update.status
+            },
+            timestamp=datetime.utcnow()
+        )
+        db.add(audit_log)
+        
+        # 5. Commit transacción completa
+        db.commit()
+        
+        # 6. Invalidar cache DESPUÉS de commit
+        await cache_manager.invalidate_case(case_id)
+        
+        # 7. Actualizar índice Elasticsearch
+        await update_case_in_elasticsearch(case_id, status_update.status)
+        
+        # 8. Publicar evento a Celery
+        task = process_case_status_change.delay(case_id, status_update.status)
+        
+        return CaseResponse.from_orm(case)
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error actualizando caso {case_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error al actualizar caso")
+```
+
+---
+
+### 2. **CRÍTICO: OCR y Elasticsearch pueden quedar desincronizados**
+
+**Problema**:
+```
+- Documento sube al backend
+- Celery procesa OCR en segundo plano
+- Elasticsearch indexa antes de que OCR termine
+- Usuario busca y no encuentra nada
+- OCR termina después pero no re-indexa
+```
+
+**Solución**:
+```python
+# backend/app/services/document_service.py - NUEVO
+from celery import group, chain, chord
+from app.tasks import process_ocr, index_document_in_elasticsearch
+
+async def upload_document_with_workflow(
+    file: UploadFile,
+    case_id: str,
+    user_id: str,
+    db: Session
+):
+    try:
+        # 1. Guardar documento sin indexar
+        document = Document(
+            case_id=case_id,
+            original_filename=file.filename,
+            file_path=f"documents/{case_id}/{file.filename}",
+            status="processing",  # NOT_INDEXED
+            uploaded_by=user_id,
+            uploaded_at=datetime.utcnow()
+        )
+        db.add(document)
+        db.commit()
+        db.refresh(document)
+        
+        # 2. Crear workflow Celery con CHORD (esperar resultado)
+        # Procesar OCR en CPU worker
+        ocr_task = process_ocr.s(
+            document_id=str(document.id),
+            file_path=document.file_path
+        )
+        
+        # Después de OCR, indexar en ES
+        index_task = index_document_in_elasticsearch.s(
+            document_id=str(document.id)
+        )
+        
+        # CHORD: ejecutar ambas tareas, luego callback
+        workflow = chord([ocr_task], index_task)
+        result = workflow.apply_async()
+        
+        return {
+            "document_id": str(document.id),
+            "status": "processing",
+            "task_id": result.id
+        }
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error uploading document: {str(e)}")
+        raise
+
+# backend/app/tasks/ocr.py - MEJORADO
+@app.task(bind=True, max_retries=3)
+def process_ocr(self, document_id: str, file_path: str):
+    try:
+        # 1. Procesar OCR
+        ocr_text = perform_ocr(file_path)
+        
+        # 2. Guardar texto en DB
+        db = get_db()
+        doc = db.query(Document).filter(Document.id == document_id).first()
+        doc.ocr_text = ocr_text
+        doc.status = "ocr_complete"
+        db.commit()
+        
+        # 3. Retornar para siguiente tarea
+        return {"document_id": document_id, "text": ocr_text}
+        
+    except Exception as exc:
+        logger.error(f"OCR failed for {document_id}: {str(exc)}")
+        raise self.retry(exc=exc, countdown=60)
+
+@app.task
+def index_document_in_elasticsearch(ocr_result):
+    """Task que indexa DESPUÉS de OCR completarse"""
+    document_id = ocr_result["document_id"]
+    text = ocr_result["text"]
+    
+    try:
+        es_client = get_elasticsearch_client()
+        es_client.index(
+            index="documents",
+            id=document_id,
+            body={
+                "document_id": document_id,
+                "text": text,
+                "indexed_at": datetime.utcnow(),
+                "status": "indexed"
+            }
+        )
+        
+        # Actualizar estado en DB
+        db = get_db()
+        doc = db.query(Document).filter(Document.id == document_id).first()
+        doc.status = "indexed"
+        db.commit()
+        
+        logger.info(f"Document {document_id} indexed successfully")
+        
+    except Exception as e:
+        logger.error(f"Indexing failed for {document_id}: {str(e)}")
+        raise
+```
+
+---
+
+### 3. **CRÍTICO: HSM puede no estar disponible en algunos ambientes**
+
+**Problema**:
+```
+- Producción: HSM (Hardware Security Module) requerido
+- Testing: HSM no disponible
+- Desarrollo: Fallback a software signing pero sin validación
+- Resultado: Firmas digitales inválidas en casos reales
+```
+
+**Solución**:
+```python
+# backend/app/core/hsm.py - ROBUSTO
+from enum import Enum
+from typing import Optional, Dict
+import logging
+
+logger = logging.getLogger(__name__)
+
+class HSMType(str, Enum):
+    PKCS11 = "pkcs11"  # Hardware HSM
+    AZURE_KEYVAULT = "azure_keyvault"  # Cloud HSM
+    SOFTWARE = "software"  # Solo desarrollo/testing
+
+class HSMManager:
+    def __init__(self, hsm_type: str):
+        self.hsm_type = HSMType(hsm_type)
+        self.client = None
+        self._initialize()
+    
+    def _initialize(self):
+        """Inicializar HSM según tipo"""
+        if self.hsm_type == HSMType.PKCS11:
+            self._init_pkcs11()
+        elif self.hsm_type == HSMType.AZURE_KEYVAULT:
+            self._init_azure()
+        elif self.hsm_type == HSMType.SOFTWARE:
+            logger.warning("⚠️ USANDO SOFTWARE SIGNING - NO USAR EN PRODUCCIÓN")
+            self._init_software()
+    
+    def _init_pkcs11(self):
+        """Conectar a HSM físico"""
+        try:
+            import PyKCS11
+            lib = PyKCS11.PyKCS11Lib()
+            lib.load(os.getenv("HSM_LIBRARY_PATH"))
+            slots = lib.getSlotList()
+            if not slots:
+                raise Exception("No HSM slots available")
+            
+            session = lib.openSession(slots[0])
+            session.login(os.getenv("HSM_PIN"))
+            self.client = session
+            logger.info("✅ PKCS#11 HSM inicializado")
+        except Exception as e:
+            logger.error(f"❌ PKCS#11 init failed: {str(e)}")
+            raise
+    
+    def _init_azure(self):
+        """Conectar a Azure Key Vault"""
+        try:
+            from azure.identity import DefaultAzureCredential
+            from azure.keyvault.keys import KeyClient
+            
+            credential = DefaultAzureCredential()
+            self.client = KeyClient(
+                vault_url=os.getenv("AZURE_KEY_VAULT_URL"),
+                credential=credential
+            )
+            logger.info("✅ Azure Key Vault inicializado")
+        except Exception as e:
+            logger.error(f"❌ Azure Key Vault init failed: {str(e)}")
+            raise
+    
+    def _init_software(self):
+        """Fallback a software signing (solo testing)"""
+        from cryptography.hazmat.primitives import serialization
+        from cryptography.hazmat.backends import default_backend
+        
+        if os.path.exists("private_key.pem"):
+            with open("private_key.pem", "rb") as f:
+                self.client = serialization.load_pem_private_key(
+                    f.read(),
+                    password=None,
+                    backend=default_backend()
+                )
+        else:
+            raise Exception("Private key not found for software signing")
+        
+        logger.warning("⚠️ Software signing enabled - verify this is NOT production")
+    
+    def sign_document(self, document_hash: bytes) -> bytes:
+        """Firmar documento con HSM"""
+        if self.hsm_type == HSMType.SOFTWARE:
+            from cryptography.hazmat.primitives.asymmetric import padding
+            from cryptography.hazmat.primitives import hashes
+            
+            signature = self.client.sign(
+                document_hash,
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA256()
+            )
+            return signature
+        
+        # HSM hardware/cloud handling...
+        raise NotImplementedError("HSM signing not implemented for this type")
+
+# backend/app/core/config.py - MEJORADO
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    # HSM Configuration
+    HSM_TYPE: str = os.getenv("HSM_TYPE", "software")
+    HSM_REQUIRED_IN_PRODUCTION: bool = True
+    
+    @property
+    def is_production(self) -> bool:
+        return os.getenv("ENVIRONMENT") == "production"
+    
+    @property
+    def hsm_enabled(self) -> bool:
+        if self.is_production and self.HSM_TYPE == "software":
+            raise ValueError("❌ SOFTWARE HSM NO PERMITIDO EN PRODUCCIÓN")
+        return True
+
+# backend/app/main.py - STARTUP CHECK
+@app.on_event("startup")
+async def startup_event():
+    settings = Settings()
+    
+    if settings.is_production and settings.HSM_TYPE == "software":
+        logger.critical("❌ ABORTING: Software HSM en producción es INSEGURO")
+        raise RuntimeError("Production requires hardware HSM")
+    
+    logger.info(f"✅ HSM Mode: {settings.HSM_TYPE}")
+    logger.info(f"✅ Environment: {settings.ENVIRONMENT}")
+```
+
+---
+
+### 4. **CRÍTICO: Race condition en asignación de jueces**
+
+**Problema**:
+```
+Dos casos creados al mismo tiempo:
+- Ambos buscan juez disponible
+- Ambos encuentran el mismo juez con menos casos
+- Ambos se asignan al mismo juez
+- Juez sobrecargado
+```
+
+**Solución**:
+```python
+# backend/app/services/case_assignment.py - TRANSACCIONAL
+from sqlalchemy import and_, update
+from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
+import logging
+
+logger = logging.getLogger(__name__)
+
+class CaseAssignmentService:
+    @staticmethod
+    async def assign_judge_safely(
+        case_id: str,
+        db: Session,
+        max_cases_per_judge: int = 50
+    ) -> str:
+        """
+        Asignar juez de forma segura usando transacción con LOCK
+        """
+        try:
+            # TRANSACTION: Usar serializable isolation level
+            db.execute("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
+            
+            # 1. Obtener jueces activos CON LOCK exclusivo
+            judges = db.query(
+                User.id,
+                func.count(Case.id).label('case_count')
+            ).filter(
+                User.role == "judge",
+                User.is_active == True
+            ).outerjoin(
+                Case,
+                and_(
+                    Case.assigned_judge_id == User.id,
+                    Case.status.in_(["pending", "in_progress"])
+                )
+            ).group_by(
+                User.id
+            ).having(
+                func.count(Case.id) < max_cases_per_judge
+            ).order_by(
+                'case_count'  # Menos casos primero
+            ).with_for_update(
+                nowait=True,
+                skip_locked=True
+            ).all()  # LOCK: Evita race condition
+            
+            if not judges:
+                logger.warning(f"No judges available for case {case_id}")
+                raise HTTPException(
+                    status_code=503,
+                    detail="No judges available"
+                )
+            
+            # 2. Seleccionar juez con menos casos
+            selected_judge_id = judges[0].id
+            
+            # 3. Actualizar caso
+            case = db.query(Case).filter(Case.id == case_id).first()
+            if not case:
+                raise HTTPException(status_code=404, detail="Case not found")
+            
+            case.assigned_judge_id = selected_judge_id
+            case.assigned_at = datetime.utcnow()
+            case.status = "assigned"
+            
+            # 4. Commit dentro de transacción
+            db.commit()
+            
+            logger.info(f"✅ Case {case_id} assigned to judge {selected_judge_id}")
+            return selected_judge_id
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(f"❌ Assignment error for case {case_id}: {str(e)}")
+            raise
+
+# backend/app/api/routes/cases.py - USAR EN CREATE
+@router.post("/cases")
+async def create_case(
+    case_data: CaseCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        # 1. Crear caso
+        case = Case(**case_data.dict(), created_by=current_user.id)
+        db.add(case)
+        db.flush()  # Obtener ID sin commit
+        
+        # 2. Asignar juez de forma segura
+        judge_id = await CaseAssignmentService.assign_judge_safely(
+            case.id,
+            db
+        )
+        
+        # 3. Commit final
+        db.commit()
+        db.refresh(case)
+        
+        return CaseResponse.from_orm(case)
+    except Exception as e:
+        db.rollback()
+        raise
+```
+
+---
+
+### 5. **ALTO: Elasticsearch puede no sincronizar en failover**
+
+**Problema**:
+```
+Si Elasticsearch se cae:
+- Búsquedas fallan
+- Datos quedan en PostgreSQL pero no indexados
+- Al recuperarse ES, índices anticuados
+```
+
+**Solución**:
+```python
+# backend/app/core/search.py - ROBUSTO
+from elasticsearch import Elasticsearch
+from typing import Optional, List
+import logging
+
+logger = logging.getLogger(__name__)
+
+class RobustSearchClient:
+    def __init__(self, hosts: List[str]):
+        self.es = Elasticsearch(hosts)
+        self.fallback_enabled = True
+    
+    async def search(
+        self,
+        index: str,
+        query: dict,
+        fallback_to_db: bool = True
+    ) -> dict:
+        """Buscar con fallback a base de datos"""
+        try:
+            # Intentar Elasticsearch
+            result = self.es.search(index=index, body=query)
+            return result
+        except Exception as e:
+            logger.warning(f"⚠️ Elasticsearch error: {str(e)}")
+            
+            if fallback_to_db:
+                logger.info("📦 Fallback to PostgreSQL search")
+                return await self._search_in_db(query)
+            else:
+                raise
+    
+    async def _search_in_db(self, query: dict) -> dict:
+        """Fallback: búsqueda en PostgreSQL"""
+        db = get_db()
+        
+        # Convertir query ES a SQL WHERE
+        search_text = query.get("query", {}).get("multi_match", {}).get("query", "")
+        
+        results = db.query(Document).filter(
+            or_(
+                Document.original_filename.ilike(f"%{search_text}%"),
+                Document.ocr_text.ilike(f"%{search_text}%")
+            )
+        ).limit(100).all()
+        
+        return {
+            "hits": {
+                "total": {"value": len(results)},
+                "hits": [{"_source": r.to_dict()} for r in results]
+            },
+            "_source": "PostgreSQL fallback"
+        }
+    
+    async def reindex_all(self, batch_size: int = 100):
+        """Re-indexar todos los documentos (para recovery)"""
+        logger.info("🔄 Starting full reindex...")
+        db = get_db()
+        
+        documents = db.query(Document).all()
+        total = len(documents)
+        
+        for i in range(0, total, batch_size):
+            batch = documents[i:i+batch_size]
+            
+            for doc in batch:
+                try:
+                    self.es.index(
+                        index="documents",
+                        id=doc.id,
+                        body=doc.to_elasticsearch_format()
+                    )
+                except Exception as e:
+                    logger.error(f"❌ Failed to reindex {doc.id}: {str(e)}")
+            
+            progress = min(i + batch_size, total)
+            logger.info(f"📊 Reindexed {progress}/{total}")
+        
+        logger.info("✅ Reindex completed")
+```
+
+---
+
+### 6. **ALTO: Audit logging puede quedar inconsistente**
+
+**Problema**:
+```
+- Acción ocurre
+- Audit log falla
+- Pero acción completó
+- Resultado: Brecha en auditoría legal
+```
+
+**Solución**:
+```python
+# backend/app/services/audit_service.py - GARANTIZADO
+from app.models import AuditLog
+from sqlalchemy.orm import Session
+from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
+
+class AuditService:
+    @staticmethod
+    def log_action(
+        db: Session,
+        user_id: str,
+        action: str,
+        resource_type: str,
+        resource_id: str,
+        old_values: Optional[dict] = None,
+        new_values: Optional[dict] = None,
+        status: str = "success"
+    ) -> AuditLog:
+        """
+        Log garantizado: Reintentar si falla
+        """
+        max_retries = 3
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            try:
+                audit_log = AuditLog(
+                    user_id=user_id,
+                    action=action,
+                    resource_type=resource_type,
+                    resource_id=resource_id,
+                    old_values=old_values,
+                    new_values=new_values,
+                    status=status,
+                    timestamp=datetime.utcnow(),
+                    ip_address=get_client_ip(),
+                    user_agent=get_user_agent()
+                )
+                
+                db.add(audit_log)
+                db.commit()
+                db.refresh(audit_log)
+                
+                logger.info(f"✅ Audit logged: {action} on {resource_type}/{resource_id}")
+                return audit_log
+                
+            except Exception as e:
+                retry_count += 1
+                logger.warning(f"⚠️ Audit log attempt {retry_count}/{max_retries} failed: {str(e)}")
+                
+                if retry_count >= max_retries:
+                    # FALLBACK: Log en archivo como garantía
+                    AuditService._log_to_file(
+                        user_id, action, resource_type, resource_id, str(e)
+                    )
+                    logger.critical(f"❌ Audit logging FAILED - logged to file as fallback")
+                    # Todavía retornar objeto para que no rompa la acción
+                    raise
+                
+                time.sleep(1)  # Esperar antes de reintentar
+        
+        raise Exception("Audit logging failed after max retries")
+    
+    @staticmethod
+    def _log_to_file(user_id: str, action: str, resource_type: str, resource_id: str, error: str):
+        """Fallback: escribir a archivo como garantía legal"""
+        import os
+        log_dir = "logs/audit_fallback"
+        os.makedirs(log_dir, exist_ok=True)
+        
+        timestamp = datetime.utcnow().isoformat()
+        with open(f"{log_dir}/audit_{timestamp.split('T')[0]}.log", "a") as f:
+            f.write(f"{timestamp}|{user_id}|{action}|{resource_type}|{resource_id}|ERROR:{error}\n")
+```
+
+---
+
+### 7. **ALTO: Multi-idioma (árabe RTL) puede romper layouts**
+
+**Problema**:
+```
+Frontend con Material-UI + árabe RTL:
+- Componentes no responden a dir="rtl"
+- Inputs con Arabic se desalinean
+- Notificaciones aparecen en lado incorrecto
+```
+
+**Solución**:
+```typescript
+// frontend/src/config/i18n.ts - MEJORADO
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+
+const resources = {
+  en: { translation: require('./locales/en.json') },
+  fr: { translation: require('./locales/fr.json') },
+  ar: { translation: require('./locales/ar.json') }
+};
+
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init({
+    resources,
+    fallbackLng: 'ar',
+    interpolation: { escapeValue: false }
+  });
+
+// Aplicar dirección RTL/LTR
+i18n.on('languageChanged', (lng) => {
+  const htmlElement = document.documentElement;
+  const isRTL = lng === 'ar';
+  
+  htmlElement.dir = isRTL ? 'rtl' : 'ltr';
+  htmlElement.lang = lng;
+  
+  // Persistir preferencia
+  localStorage.setItem('preferredLanguage', lng);
+  localStorage.setItem('textDirection', isRTL ? 'rtl' : 'ltr');
+});
+
+// frontend/src/theme/theme.ts - RTL SUPPORT
+import { createTheme } from '@mui/material/styles';
+
+const getTheme = (direction) => createTheme({
+  direction,
+  palette: {
+    primary: { main: '#9c27b0' },
+    secondary: { main: '#673ab7' }
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        'html, body': {
+          direction: direction,
+          textAlign: direction === 'rtl' ? 'right' : 'left'
+        }
+      }
+    },
+    // Componentes con margen direccional
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          marginLeft: direction === 'rtl' ? 'auto' : undefined,
+          marginRight: direction === 'rtl' ? undefined : 'auto'
+        }
+      }
+    }
+  }
+});
+
+// frontend/src/App.tsx - CONTEXT
+import { useTranslation } from 'react-i18next';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
+
+export default function App() {
+  const { i18n } = useTranslation();
+  const direction = i18n.language === 'ar' ? 'rtl' : 'ltr';
+  const theme = getTheme(direction);
+  
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {/* App content */}
+    </ThemeProvider>
+  );
+}
+```
+
+---
+
+## 🛡️ CHECKLIST DE SEGURIDAD
+
+```
+Production Security:
+☐ HSM OBLIGATORIO (no software signing)
+☐ Rate limiting: 5 intentos login / 1 minuto
+☐ HTTPS/TLS con certificado válido
+☐ CORS: Solo dominios .ma autorizados
+☐ CSRF tokens en forms
+☐ WAF (Web Application Firewall) activo
+☐ DDoS protection (Cloudflare/Akamai)
+☐ SQL injection: SQLAlchemy + parameterized queries
+☐ XSS protection: Content-Security-Policy headers
+☐ Secrets: Variables en vault, NO en .env
+☐ Backups: Diarios encriptados, 7 años retención
+☐ Monitoring: Grafana + alertas críticas
+☐ Logs: Centralizados (ELK/Datadog), 2555 días
+```
+
+---
+
+## 📈 PERFORMANCE TUNING
+
+```python
+# backend/app/core/db.py - POOL CONFIG
+from sqlalchemy import create_engine
+from sqlalchemy.pool import QueuePool
+
+engine = create_engine(
+    DATABASE_URL,
+    poolclass=QueuePool,
+    pool_size=20,           # Conexiones simultáneas
+    max_overflow=40,        # Conexiones extra si necesario
+    pool_recycle=3600,      # Reciclar cada hora
+    pool_pre_ping=True,     # Verificar conexión antes de usar
+    echo=False              # Desactivar logging SQL en prod
+)
+
+# Elasticsearch: Bulk indexing
+from elasticsearch.helpers import bulk
+
+def bulk_index_documents(documents: List[dict]):
+    actions = [
+        {
+            "_index": "documents",
+            "_id": doc["id"],
+            "_source": doc
+        }
+        for doc in documents
+    ]
+    
+    success, failed = bulk(es_client, actions, chunk_size=500)
+    logger.info(f"Indexed {success}, failed {failed}")
+
+# Redis: Pipelining
+pipe = redis_client.pipeline()
+for key, value in items:
+    pipe.set(key, value)
+pipe.execute()
+```
+
+---
+
+##
