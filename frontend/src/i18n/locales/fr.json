@@ -15,7 +15,8 @@
     "close": "Fermer",
     "yes": "Oui",
     "no": "Non",
-    "user": "Utilisateur"
+    "user": "Utilisateur",
+    "actions": "Actions"
   },
   "auth": {
     "login": "Se Connecter",
@@ -72,7 +73,30 @@
     "active": "actifs",
     "completed": "terminés",
     "archived": "archivés",
-    "notAssigned": "Non assigné"
+    "notAssigned": "Non assigné",
+    "judge": {
+      "title": "Tableau de Bord du Juge",
+      "subtitle": "Gérez vos affaires assignées",
+      "totalAssigned": "Total Assigné",
+      "assignedCases": "Affaires Assignées",
+      "noCases": "Aucune affaire assignée"
+    },
+    "lawyer": {
+      "title": "Tableau de Bord de l'Avocat",
+      "subtitle": "Gérez vos affaires",
+      "totalCases": "Total des Affaires",
+      "activeCases": "Affaires Actives",
+      "myCases": "Mes Affaires",
+      "noCases": "Aucune affaire enregistrée"
+    },
+    "citizen": {
+      "title": "Mes Affaires",
+      "subtitle": "Consultez l'état de vos affaires",
+      "totalCases": "Total des Affaires",
+      "activeCases": "Affaires Actives",
+      "caseProgress": "Progrès de l'Affaire",
+      "noCases": "Aucune affaire enregistrée"
+    }
   },
   "status": {
     "pending": "En Attente",
@@ -115,5 +139,23 @@
   "branding": {
     "appName": "Justice Numérique",
     "country": "Royaume du Maroc"
+  },
+  "cases": {
+    "caseNumber": "N° d'Affaire",
+    "title": "Titre",
+    "description": "Description",
+    "owner": "Propriétaire",
+    "assignedJudge": "Juge Assigné",
+    "notAssigned": "Non assigné",
+    "createdAt": "Date de Création",
+    "changeStatus": "Changer le Statut",
+    "status": {
+      "title": "Statut",
+      "pending": "En Attente",
+      "inProgress": "En Cours",
+      "underReview": "En Révision",
+      "resolved": "Résolu",
+      "closed": "Fermé"
+    }
   }
 }

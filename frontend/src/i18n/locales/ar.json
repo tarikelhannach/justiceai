@@ -15,7 +15,8 @@
     "close": "إغلاق",
     "yes": "نعم",
     "no": "لا",
-    "user": "مستخدم"
+    "user": "مستخدم",
+    "actions": "الإجراءات"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -72,7 +73,30 @@
     "active": "نشطة",
     "completed": "مكتملة",
     "archived": "مؤرشفة",
-    "notAssigned": "غير معين"
+    "notAssigned": "غير معين",
+    "judge": {
+      "title": "لوحة القاضي",
+      "subtitle": "إدارة القضايا المخصصة لك",
+      "totalAssigned": "إجمالي المخصص",
+      "assignedCases": "القضايا المخصصة",
+      "noCases": "لا توجد قضايا مخصصة"
+    },
+    "lawyer": {
+      "title": "لوحة المحامي",
+      "subtitle": "إدارة قضاياك",
+      "totalCases": "إجمالي القضايا",
+      "activeCases": "القضايا النشطة",
+      "myCases": "قضاياي",
+      "noCases": "لا توجد قضايا مسجلة"
+    },
+    "citizen": {
+      "title": "قضاياي",
+      "subtitle": "تتبع حالة قضاياك",
+      "totalCases": "إجمالي القضايا",
+      "activeCases": "القضايا النشطة",
+      "caseProgress": "تقدم القضية",
+      "noCases": "لا توجد قضايا مسجلة"
+    }
   },
   "status": {
     "pending": "معلق",
@@ -115,5 +139,23 @@
   "branding": {
     "appName": "العدالة الرقمية",
     "country": "المملكة المغربية"
+  },
+  "cases": {
+    "caseNumber": "رقم القضية",
+    "title": "العنوان",
+    "description": "الوصف",
+    "owner": "المالك",
+    "assignedJudge": "القاضي المعين",
+    "notAssigned": "غير معين",
+    "createdAt": "تاريخ الإنشاء",
+    "changeStatus": "تغيير الحالة",
+    "status": {
+      "title": "الحالة",
+      "pending": "معلق",
+      "inProgress": "قيد التنفيذ",
+      "underReview": "قيد المراجعة",
+      "resolved": "محلول",
+      "closed": "مغلق"
+    }
   }
 }
