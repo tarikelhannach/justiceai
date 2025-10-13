@@ -27,22 +27,25 @@ import {
   TrendingUp as TrendingUpIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
+  HourglassEmpty as PendingIcon,
 } from '@mui/icons-material';
+import { casesAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
   const theme = useTheme();
+  const { user } = useAuth();
   const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalCases: 0,
-    totalDocuments: 0,
-    activeCases: 0,
-    pendingDocuments: 0,
-    signaturesToday: 0,
+    total: 0,
+    pending: 0,
+    in_progress: 0,
+    resolved: 0,
+    closed: 0,
   });
 
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [systemHealth, setSystemHealth] = useState('healthy');
+  const [recentCases, setRecentCases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -53,47 +56,44 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      // Set demo data for now - backend API not yet configured
-      setStats({
-        totalUsers: 125,
-        totalCases: 342,
-        totalDocuments: 1567,
-        activeCases: 89,
-        pendingDocuments: 23,
-        signaturesToday: 45,
-      });
+      // Obtener estadísticas reales del backend
+      const caseStats = await casesAPI.getCaseStats();
+      setStats(caseStats);
 
-      setRecentActivity([
-        {
-          user_email: 'admin@justicia.ma',
-          action: 'Crear Caso',
-          resource_type: 'Caso Judicial',
-          timestamp: new Date().toISOString(),
-          status: 'success',
-        },
-        {
-          user_email: 'juez@justicia.ma',
-          action: 'Firmar Documento',
-          resource_type: 'Documento',
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-          status: 'success',
-        },
-        {
-          user_email: 'secretario@justicia.ma',
-          action: 'Actualizar Caso',
-          resource_type: 'Caso Judicial',
-          timestamp: new Date(Date.now() - 600000).toISOString(),
-          status: 'success',
-        },
-      ]);
+      // Obtener casos recientes
+      const cases = await casesAPI.getCases({ skip: 0, limit: 5 });
+      setRecentCases(cases);
 
-      setSystemHealth('healthy');
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
+      setError(err.response?.data?.detail || 'Error al cargar datos del dashboard');
     } finally {
       setLoading(false);
     }
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'warning',
+      in_progress: 'info',
+      resolved: 'success',
+      closed: 'secondary',
+      archived: 'secondary',
+    };
+    return colors[status] || 'primary';
+  };
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      pending: 'Pendiente',
+      in_progress: 'En Progreso',
+      resolved: 'Resuelto',
+      closed: 'Cerrado',
+      archived: 'Archivado',
+    };
+    return labels[status] || status;
   };
 
   const StatCard = ({ title, value, icon: Icon, color = 'primary', trend }) => (
@@ -132,7 +132,7 @@ const AdminDashboard = () => {
               <Box display="flex" alignItems="center" gap={0.5}>
                 <TrendingUpIcon fontSize="small" color={color} />
                 <Typography variant="caption" color={`${color}.main`} fontWeight={600}>
-                  +{trend}% este mes
+                  {trend}
                 </Typography>
               </Box>
             )}
@@ -154,7 +154,7 @@ const AdminDashboard = () => {
     </Card>
   );
 
-  if (loading) {
+  if (loading && stats.total === 0) {
     return (
       <Box>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
@@ -173,9 +173,18 @@ const AdminDashboard = () => {
           Dashboard de Administración
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Bienvenido al Sistema Judicial Digital de Marruecos 🇲🇦
+          Bienvenido {user?.name} - {user?.role === 'admin' ? 'Administrador' : user?.role} 🇲🇦
         </Typography>
       </Box>
+
+      {/* Error Alert */}
+      {error && (
+        <Box mb={4}>
+          <Alert severity="error" onClose={() => setError(null)} sx={{ borderRadius: 2 }}>
+            {error}
+          </Alert>
+        </Box>
+      )}
 
       {/* Estado del Sistema */}
       <Box mb={4}>
@@ -191,6 +200,7 @@ const AdminDashboard = () => {
               color="inherit"
               size="small"
               onClick={() => fetchDashboardData()}
+              disabled={loading}
               sx={{ fontWeight: 600 }}
             >
               Actualizar
@@ -198,7 +208,7 @@ const AdminDashboard = () => {
           }
         >
           <Typography variant="body2" fontWeight={600}>
-            Sistema Operativo - Todos los servicios funcionando correctamente
+            Sistema Operativo - Base de datos conectada
           </Typography>
         </Alert>
       </Box>
@@ -207,109 +217,132 @@ const AdminDashboard = () => {
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Total Usuarios"
-            value={stats.totalUsers}
-            icon={PeopleIcon}
-            color="primary"
-            trend={12}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Total Casos"
-            value={stats.totalCases}
+            title="Total de Casos"
+            value={stats.total}
             icon={GavelIcon}
-            color="secondary"
-            trend={8}
+            color="primary"
+            trend={`${stats.total} casos en el sistema`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Documentos"
-            value={stats.totalDocuments}
-            icon={DescriptionIcon}
-            color="info"
-            trend={15}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Casos Activos"
-            value={stats.activeCases}
-            icon={TrendingUpIcon}
-            color="success"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <StatCard
-            title="Pendientes"
-            value={stats.pendingDocuments}
-            icon={WarningIcon}
+            title="Casos Pendientes"
+            value={stats.pending}
+            icon={PendingIcon}
             color="warning"
+            trend={`${stats.pending} esperando asignación`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Firmas Hoy"
-            value={stats.signaturesToday}
+            title="En Progreso"
+            value={stats.in_progress}
+            icon={TrendingUpIcon}
+            color="info"
+            trend={`${stats.in_progress} activos`}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Casos Resueltos"
+            value={stats.resolved}
+            icon={CheckCircleIcon}
+            color="success"
+            trend={`${stats.resolved} completados`}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Casos Cerrados"
+            value={stats.closed}
             icon={SecurityIcon}
-            color="error"
+            color="secondary"
+            trend={`${stats.closed} archivados`}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Tasa de Resolución"
+            value={stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}
+            icon={DescriptionIcon}
+            color="secondary"
+            trend={`${stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}% completado`}
           />
         </Grid>
       </Grid>
 
-      {/* Actividad Reciente */}
+      {/* Casos Recientes */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-            Actividad Reciente
+            Casos Recientes
           </Typography>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Usuario</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Acción</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Recurso</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Estado</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {recentActivity.map((activity, index) => (
-                  <TableRow
-                    key={index}
-                    sx={{
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                      },
-                    }}
-                  >
-                    <TableCell>{activity.user_email}</TableCell>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
-                        {activity.action}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>{activity.resource_type}</TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {new Date(activity.timestamp).toLocaleString('es-ES')}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={activity.status}
-                        color={activity.status === 'success' ? 'success' : 'error'}
-                        size="small"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
+          {recentCases.length === 0 ? (
+            <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+              No hay casos disponibles
+            </Typography>
+          ) : (
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Número</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Título</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Propietario</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Juez Asignado</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Estado</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {recentCases.map((caseItem) => (
+                    <TableRow
+                      key={caseItem.id}
+                      sx={{
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        },
+                      }}
+                    >
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={600}>
+                          {caseItem.case_number}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2">
+                          {caseItem.title}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {caseItem.owner?.name || 'N/A'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {caseItem.assigned_judge?.name || 'Sin asignar'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={getStatusLabel(caseItem.status)}
+                          color={getStatusColor(caseItem.status)}
+                          size="small"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(caseItem.created_at).toLocaleDateString('es-ES')}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </CardContent>
       </Card>
 

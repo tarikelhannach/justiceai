@@ -60,6 +60,12 @@ The MVP is now functional with:
   - Axios service with interceptors
   - Bearer token authentication
   - Error handling
+- **Dashboard Features**:
+  - Real-time case statistics from backend API
+  - Auto-refresh every 30 seconds
+  - Recent cases display with status, owner, and judge info
+  - Error handling with dismissible alerts
+  - Loading states and graceful fallbacks
 
 ## Demo Users
 Access the system with these credentials:
