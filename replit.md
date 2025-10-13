@@ -24,6 +24,37 @@ The MVP is now functional with:
 
 ## Recent Changes (October 13, 2025)
 
+### Role-Specific Dashboards ✅ LATEST
+- **Permission System**: Created `usePermissions` hook for frontend RBAC
+  - Verifies user roles and permissions for actions
+  - Constants for roles: ADMIN, JUDGE, LAWYER, CLERK, CITIZEN
+  - Permission checks: canViewAllCases, canEditCase, canDeleteCase, canAssignJudge, canManageUsers
+- **Dashboard Components**:
+  - `RoleDashboard.jsx`: Routes users to appropriate dashboard based on role
+  - `JudgeDashboard.jsx`: Shows only assigned cases, can change status
+  - `LawyerDashboard.jsx`: Shows only owned cases, can edit and upload documents
+  - `CitizenDashboard.jsx`: Shows only owned cases, read-only view with progress tracking
+  - `AdminDashboard.jsx`: Full system access (also used by clerks)
+- **Backend RBAC** (already implemented):
+  - GET `/api/cases/` automatically filters cases by role:
+    - Lawyers see only `Case.owner_id == user.id`
+    - Judges see only `Case.assigned_judge_id == user.id`
+    - Citizens see only `Case.owner_id == user.id`
+    - Admin/Clerk see all cases
+  - PUT `/api/cases/{id}` enforces field-level permissions:
+    - Lawyers/Citizens cannot modify status or assigned_judge
+    - Judges can modify all fields for assigned cases
+    - Admin/Clerk can modify all fields for all cases
+- **Security Improvements**:
+  - RoleDashboard default case shows error instead of granting admin access
+  - Unknown roles cannot access any dashboard
+  - Backend automatically filters data, frontend cannot bypass restrictions
+- **Translations**: Added dashboard-specific translations for all roles in ES/FR/AR
+  - `dashboard.judge`: Judge dashboard texts
+  - `dashboard.lawyer`: Lawyer dashboard texts
+  - `dashboard.citizen`: Citizen dashboard texts
+  - `cases.*`: Case-related translations for forms and displays
+
 ### RTL (Right-to-Left) Fixes ✅
 - **Layout RTL Support**: Fixed sidebar and AppBar positioning for Arabic
   - Drawer anchor changes from 'left' to 'right' in RTL mode
@@ -104,11 +135,17 @@ Access the system with these credentials:
 - **Components**: 
   - `Login.jsx`: Modern login/register form (translated)
   - `Layout.jsx`: Sidebar navigation with user info and language selector
-  - `AdminDashboard.jsx`: Main dashboard with stats (translated)
+  - `RoleDashboard.jsx`: Smart router to role-specific dashboards
+  - `AdminDashboard.jsx`: Admin/Clerk dashboard with full system access
+  - `JudgeDashboard.jsx`: Judge dashboard for assigned cases
+  - `LawyerDashboard.jsx`: Lawyer dashboard for owned cases
+  - `CitizenDashboard.jsx`: Citizen dashboard for case tracking
   - `DocumentUpload.jsx`: Document upload dialog (translated)
   - `LanguageSelector.jsx`: Language switcher with flags
   - `AuthContext`: Authentication state management
   - `api.js`: Axios API service
+- **Hooks**:
+  - `usePermissions.js`: RBAC permission checking hook
 - **i18n**:
   - Configuration: `i18n/config.js`
   - Translations: `i18n/locales/{es,fr,ar}.json`
@@ -268,6 +305,14 @@ The project is configured for Autoscale deployment:
 4. ✅ RTL (Right-to-Left) support for Arabic
 5. ✅ Complete translations for all UI components
 6. ✅ Language persistence in localStorage
+
+### Phase 2.6 (Role-Based Dashboards) ✅ COMPLETED
+1. ✅ Role-specific dashboard components (Judge, Lawyer, Citizen, Admin)
+2. ✅ Permission system with usePermissions hook
+3. ✅ Backend RBAC with automatic case filtering
+4. ✅ Field-level permissions enforcement
+5. ✅ Security hardening (no admin fallback for unknown roles)
+6. ✅ Complete translations for role-specific features
 
 ### Phase 3 (Advanced Features)
 1. OCR processing (Tesseract integration)
