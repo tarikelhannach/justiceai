@@ -11,6 +11,7 @@ import CasesList from './components/CasesList';
 import DocumentsList from './components/DocumentsList';
 import UsersList from './components/UsersList';
 import Settings from './components/Settings';
+import Audit from './pages/Audit';
 import { CircularProgress, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -116,6 +117,16 @@ function AppContent() {
             <ProtectedRoute>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
                 <Settings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/auditoria"
+          element={
+            <ProtectedRoute>
+              <Layout onToggleTheme={toggleTheme} mode={mode}>
+                <Audit />
               </Layout>
             </ProtectedRoute>
           }

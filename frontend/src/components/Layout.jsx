@@ -27,6 +27,7 @@ import {
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
   ExitToApp as LogoutIcon,
+  Assessment as AuditIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -74,6 +75,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
     { text: t('navigation.cases'), icon: <GavelIcon />, path: '/casos' },
     { text: t('navigation.documents'), icon: <DescriptionIcon />, path: '/documentos' },
     { text: t('navigation.users'), icon: <PeopleIcon />, path: '/usuarios' },
+    { text: t('navigation.audit'), icon: <AuditIcon />, path: '/auditoria' },
     { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/configuracion' },
   ];
 
