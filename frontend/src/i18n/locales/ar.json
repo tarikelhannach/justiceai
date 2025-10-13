@@ -129,7 +129,16 @@
     "fileSize": "الحجم",
     "fileTooBig": "الملف كبير جدًا. الحد الأقصى 50 ميجابايت",
     "fileTypeNotAllowed": "نوع الملف غير مسموح به",
-    "selectFile": "يرجى تحديد ملف"
+    "selectFile": "يرجى تحديد ملف",
+    "filename": "الاسم",
+    "case": "القضية",
+    "uploadedBy": "تم التحميل بواسطة",
+    "uploadedAt": "التاريخ",
+    "size": "الحجم",
+    "noDocuments": "لا توجد مستندات",
+    "confirmDelete": "تأكيد حذف المستند؟",
+    "selectFileAndCase": "حدد ملفًا وقضية",
+    "selectCase": "اختر القضية"
   },
   "roles": {
     "admin": "مسؤول",
@@ -159,6 +168,10 @@
     "notAssigned": "غير معين",
     "createdAt": "تاريخ الإنشاء",
     "changeStatus": "تغيير الحالة",
+    "new": "قضية جديدة",
+    "edit": "تعديل القضية",
+    "view": "عرض القضية",
+    "confirmDelete": "تأكيد حذف القضية؟",
     "status": {
       "title": "الحالة",
       "pending": "معلق",
@@ -167,5 +180,53 @@
       "resolved": "محلول",
       "closed": "مغلق"
     }
+  },
+  "users": {
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "role": "الدور",
+    "password": "كلمة المرور",
+    "new": "مستخدم جديد",
+    "edit": "تعديل المستخدم",
+    "noUsers": "لا يوجد مستخدمين",
+    "confirmDelete": "تأكيد حذف المستخدم؟",
+    "noPermission": "ليس لديك إذن لعرض هذه الصفحة"
+  },
+  "settings": {
+    "profile": "الملف الشخصي",
+    "changePassword": "تغيير كلمة المرور",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "notifications": "الإشعارات",
+    "emailNotifications": "إشعارات البريد الإلكتروني",
+    "caseUpdates": "تحديثات القضايا",
+    "documentUploads": "مستندات جديدة",
+    "deadlineReminders": "تذكيرات المواعيد النهائية",
+    "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+    "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "notificationsSaved": "تم حفظ التفضيلات"
+  },
+  "common": {
+    "welcome": "مرحبا",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "refresh": "تحديث",
+    "close": "إغلاق",
+    "yes": "نعم",
+    "no": "لا",
+    "user": "مستخدم",
+    "actions": "الإجراءات",
+    "all": "الكل",
+    "rowsPerPage": "صفوف لكل صفحة"
   }
 }

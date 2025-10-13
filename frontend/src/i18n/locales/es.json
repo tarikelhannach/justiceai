@@ -129,7 +129,16 @@
     "fileSize": "Tamaño",
     "fileTooBig": "Archivo demasiado grande. Máximo 50MB",
     "fileTypeNotAllowed": "Tipo de archivo no permitido",
-    "selectFile": "Por favor selecciona un archivo"
+    "selectFile": "Por favor selecciona un archivo",
+    "filename": "Nombre",
+    "case": "Caso",
+    "uploadedBy": "Subido por",
+    "uploadedAt": "Fecha",
+    "size": "Tamaño",
+    "noDocuments": "No hay documentos",
+    "confirmDelete": "¿Confirmar eliminación del documento?",
+    "selectFileAndCase": "Selecciona un archivo y un caso",
+    "selectCase": "Seleccionar Caso"
   },
   "roles": {
     "admin": "Administrador",
@@ -159,6 +168,10 @@
     "notAssigned": "No asignado",
     "createdAt": "Fecha de Creación",
     "changeStatus": "Cambiar Estado",
+    "new": "Nuevo Caso",
+    "edit": "Editar Caso",
+    "view": "Ver Caso",
+    "confirmDelete": "¿Confirmar eliminación del caso?",
     "status": {
       "title": "Estado",
       "pending": "Pendiente",
@@ -167,5 +180,53 @@
       "resolved": "Resuelto",
       "closed": "Cerrado"
     }
+  },
+  "users": {
+    "name": "Nombre",
+    "email": "Correo",
+    "role": "Rol",
+    "password": "Contraseña",
+    "new": "Nuevo Usuario",
+    "edit": "Editar Usuario",
+    "noUsers": "No hay usuarios",
+    "confirmDelete": "¿Confirmar eliminación del usuario?",
+    "noPermission": "No tienes permiso para ver esta página"
+  },
+  "settings": {
+    "profile": "Perfil",
+    "changePassword": "Cambiar Contraseña",
+    "currentPassword": "Contraseña Actual",
+    "newPassword": "Nueva Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "notifications": "Notificaciones",
+    "emailNotifications": "Notificaciones por correo",
+    "caseUpdates": "Actualizaciones de casos",
+    "documentUploads": "Nuevos documentos",
+    "deadlineReminders": "Recordatorios de plazos",
+    "profileUpdated": "Perfil actualizado correctamente",
+    "passwordChanged": "Contraseña actualizada correctamente",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "notificationsSaved": "Preferencias guardadas"
+  },
+  "common": {
+    "welcome": "Bienvenido",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "refresh": "Actualizar",
+    "close": "Cerrar",
+    "yes": "Sí",
+    "no": "No",
+    "user": "Usuario",
+    "actions": "Acciones",
+    "all": "Todos",
+    "rowsPerPage": "Filas por página"
   }
 }

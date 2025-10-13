@@ -129,7 +129,16 @@
     "fileSize": "Taille",
     "fileTooBig": "Fichier trop volumineux. Maximum 50MB",
     "fileTypeNotAllowed": "Type de fichier non autorisé",
-    "selectFile": "Veuillez sélectionner un fichier"
+    "selectFile": "Veuillez sélectionner un fichier",
+    "filename": "Nom",
+    "case": "Affaire",
+    "uploadedBy": "Téléchargé par",
+    "uploadedAt": "Date",
+    "size": "Taille",
+    "noDocuments": "Aucun document",
+    "confirmDelete": "Confirmer la suppression du document?",
+    "selectFileAndCase": "Sélectionnez un fichier et une affaire",
+    "selectCase": "Sélectionner une Affaire"
   },
   "roles": {
     "admin": "Administrateur",
@@ -159,6 +168,10 @@
     "notAssigned": "Non assigné",
     "createdAt": "Date de Création",
     "changeStatus": "Changer le Statut",
+    "new": "Nouvelle Affaire",
+    "edit": "Modifier l'Affaire",
+    "view": "Voir l'Affaire",
+    "confirmDelete": "Confirmer la suppression de l'affaire?",
     "status": {
       "title": "Statut",
       "pending": "En Attente",
@@ -167,5 +180,53 @@
       "resolved": "Résolu",
       "closed": "Fermé"
     }
+  },
+  "users": {
+    "name": "Nom",
+    "email": "E-mail",
+    "role": "Rôle",
+    "password": "Mot de passe",
+    "new": "Nouvel Utilisateur",
+    "edit": "Modifier l'Utilisateur",
+    "noUsers": "Aucun utilisateur",
+    "confirmDelete": "Confirmer la suppression de l'utilisateur?",
+    "noPermission": "Vous n'avez pas la permission de voir cette page"
+  },
+  "settings": {
+    "profile": "Profil",
+    "changePassword": "Changer le Mot de Passe",
+    "currentPassword": "Mot de Passe Actuel",
+    "newPassword": "Nouveau Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "notifications": "Notifications",
+    "emailNotifications": "Notifications par e-mail",
+    "caseUpdates": "Mises à jour des affaires",
+    "documentUploads": "Nouveaux documents",
+    "deadlineReminders": "Rappels de délais",
+    "profileUpdated": "Profil mis à jour avec succès",
+    "passwordChanged": "Mot de passe mis à jour avec succès",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "notificationsSaved": "Préférences enregistrées"
+  },
+  "common": {
+    "welcome": "Bienvenue",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "refresh": "Actualiser",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non",
+    "user": "Utilisateur",
+    "actions": "Actions",
+    "all": "Tous",
+    "rowsPerPage": "Lignes par page"
   }
 }

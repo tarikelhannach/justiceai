@@ -7,6 +7,10 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import RoleDashboard from './components/RoleDashboard';
 import Login from './components/Login';
+import CasesList from './components/CasesList';
+import DocumentsList from './components/DocumentsList';
+import UsersList from './components/UsersList';
+import Settings from './components/Settings';
 import { CircularProgress, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -72,6 +76,46 @@ function AppContent() {
             <ProtectedRoute>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
                 <RoleDashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/casos"
+          element={
+            <ProtectedRoute>
+              <Layout onToggleTheme={toggleTheme} mode={mode}>
+                <CasesList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/documentos"
+          element={
+            <ProtectedRoute>
+              <Layout onToggleTheme={toggleTheme} mode={mode}>
+                <DocumentsList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/usuarios"
+          element={
+            <ProtectedRoute>
+              <Layout onToggleTheme={toggleTheme} mode={mode}>
+                <UsersList />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/configuracion"
+          element={
+            <ProtectedRoute>
+              <Layout onToggleTheme={toggleTheme} mode={mode}>
+                <Settings />
               </Layout>
             </ProtectedRoute>
           }
