@@ -15,6 +15,7 @@ import {
   Avatar,
   useTheme,
   alpha,
+  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,12 +28,38 @@ import {
   Brightness7 as LightModeIcon,
   ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const drawerWidth = 280;
+
+const getRoleLabel = (role) => {
+  const roles = {
+    admin: 'Administrador',
+    judge: 'Juez',
+    lawyer: 'Abogado',
+    clerk: 'Secretario',
+    citizen: 'Ciudadano',
+  };
+  return roles[role] || role;
+};
+
+const getRoleColor = (role) => {
+  const colors = {
+    admin: 'error',
+    judge: 'primary',
+    lawyer: 'success',
+    clerk: 'info',
+    citizen: 'default',
+  };
+  return colors[role] || 'default';
+};
 
 const Layout = ({ children, onToggleTheme, mode }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -90,15 +117,21 @@ const Layout = ({ children, onToggleTheme, mode }) => {
               mr: 1.5,
             }}
           >
-            A
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
           </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              Administrador
+              {user?.name || 'Usuario'}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              admin@justicia.ma
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {user?.email || ''}
             </Typography>
+            <Chip 
+              label={getRoleLabel(user?.role)}
+              size="small"
+              color={getRoleColor(user?.role)}
+              sx={{ mt: 0.5, height: 20, fontSize: '0.7rem' }}
+            />
           </Box>
         </Box>
       </Box>
@@ -144,6 +177,10 @@ const Layout = ({ children, onToggleTheme, mode }) => {
       {/* Botones de Acción */}
       <Box sx={{ p: 2 }}>
         <ListItemButton
+          onClick={async () => {
+            await logout();
+            navigate('/login');
+          }}
           sx={{
             borderRadius: 2,
             '&:hover': {
