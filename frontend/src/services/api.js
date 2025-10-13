@@ -88,4 +88,43 @@ export const casesAPI = {
   },
 };
 
+export const documentsAPI = {
+  uploadDocument: async (file, caseId = null) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (caseId) {
+      formData.append('case_id', caseId);
+    }
+    
+    const response = await api.post('/documents/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+  
+  getDocuments: async (params = {}) => {
+    const response = await api.get('/documents/', { params });
+    return response.data;
+  },
+  
+  getDocument: async (documentId) => {
+    const response = await api.get(`/documents/${documentId}`);
+    return response.data;
+  },
+  
+  downloadDocument: async (documentId) => {
+    const response = await api.get(`/documents/${documentId}/download`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+  
+  deleteDocument: async (documentId) => {
+    const response = await api.delete(`/documents/${documentId}`);
+    return response.data;
+  },
+};
+
 export default api;

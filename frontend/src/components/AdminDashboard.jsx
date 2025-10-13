@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { casesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import DocumentUpload from './DocumentUpload';
 
 const AdminDashboard = () => {
   const theme = useTheme();
@@ -46,6 +47,7 @@ const AdminDashboard = () => {
   const [recentCases, setRecentCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -382,6 +384,7 @@ const AdminDashboard = () => {
                 },
               }}
               startIcon={<DescriptionIcon />}
+              onClick={() => setUploadDialogOpen(true)}
             >
               Subir Documento
             </Button>
@@ -402,6 +405,15 @@ const AdminDashboard = () => {
           </Box>
         </CardContent>
       </Card>
+
+      <DocumentUpload
+        open={uploadDialogOpen}
+        onClose={() => setUploadDialogOpen(false)}
+        onUploadSuccess={(response) => {
+          console.log('Documento subido:', response);
+          setUploadDialogOpen(false);
+        }}
+      />
     </Box>
   );
 };
