@@ -29,8 +29,13 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 ### Feature Specifications
 - **Authentication**: User login, registration, secure JWT token management with rate limiting, 2FA TOTP support, password reset flow, and "Remember Me" functionality.
 - **Two-Factor Authentication (2FA)**: TOTP-based 2FA with QR code generation, mobile app integration (Google Authenticator, Authy), and secure verification flow.
-- **Password Reset**: Complete password reset flow with email token generation, secure confirmation, and URL parameter support.
+- **Password Reset**: Complete password reset flow with dual-store pattern (Redis + in-memory fallback) for token management, ensuring functionality regardless of Redis availability. Tokens are automatically verified and invalidated from both stores for consistency.
 - **Remember Me**: Email persistence in localStorage for improved UX.
+- **Dual-Store Token Management**: Password reset tokens use a resilient dual-store pattern:
+  - **Primary Store**: Redis for production-grade token storage
+  - **Fallback Store**: In-memory dictionary when Redis is unavailable
+  - **Consistency**: All operations (generate, verify, invalidate, expire) check both stores
+  - **Behavior**: Tokens created during Redis outages remain valid when Redis recovers
 - **Case Operations**: Role-specific CRUD and modification rights for cases.
 - **Advanced Search**: Backend endpoint for complex queries, integrated with a debounced, auto-completing frontend search bar.
 - **Role-Specific Dashboards**: Dynamically routes users to tailored dashboards.
