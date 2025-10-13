@@ -14,7 +14,8 @@
     "refresh": "تحديث",
     "close": "إغلاق",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "user": "مستخدم"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -40,7 +41,8 @@
     "passwordRequired": "كلمة المرور مطلوبة",
     "passwordsNotMatch": "كلمات المرور غير متطابقة",
     "passwordMinLength": "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل",
-    "demoCredentials": "بيانات اعتماد العرض التوضيحي"
+    "demoCredentials": "بيانات اعتماد العرض التوضيحي",
+    "demoPasswordFormat": "[دور]123 (مثال: admin123)"
   },
   "dashboard": {
     "title": "لوحة التحكم الإدارية",
@@ -109,5 +111,9 @@
     "users": "المستخدمين",
     "settings": "الإعدادات",
     "profile": "الملف الشخصي"
+  },
+  "branding": {
+    "appName": "العدالة الرقمية",
+    "country": "المملكة المغربية"
   }
 }

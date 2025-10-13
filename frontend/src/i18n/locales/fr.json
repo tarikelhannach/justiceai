@@ -14,7 +14,8 @@
     "refresh": "Actualiser",
     "close": "Fermer",
     "yes": "Oui",
-    "no": "Non"
+    "no": "Non",
+    "user": "Utilisateur"
   },
   "auth": {
     "login": "Se Connecter",
@@ -40,7 +41,8 @@
     "passwordRequired": "Le mot de passe est requis",
     "passwordsNotMatch": "Les mots de passe ne correspondent pas",
     "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
-    "demoCredentials": "Identifiants de démonstration"
+    "demoCredentials": "Identifiants de démonstration",
+    "demoPasswordFormat": "[rôle]123 (ex: admin123, juez123)"
   },
   "dashboard": {
     "title": "Tableau de Bord d'Administration",
@@ -109,5 +111,9 @@
     "users": "Utilisateurs",
     "settings": "Paramètres",
     "profile": "Profil"
+  },
+  "branding": {
+    "appName": "Justice Numérique",
+    "country": "Royaume du Maroc"
   }
 }

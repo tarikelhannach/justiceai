@@ -129,10 +129,10 @@ const Login = () => {
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Gavel sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Sistema Judicial Digital
+              {t('branding.appName')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Reino de Marruecos
+              {t('branding.country')}
             </Typography>
           </Box>
 
@@ -325,11 +325,11 @@ const Login = () => {
             <Typography variant="caption" color="text.secondary">
               {t('auth.demoCredentials')}:
             </Typography>
-            <Typography variant="caption" display="block" color="text.secondary">
+            <Typography variant="caption" display="block" color="text.secondary" sx={{ direction: 'ltr' }}>
               admin@justicia.ma | juez@justicia.ma | abogado@justicia.ma
             </Typography>
             <Typography variant="caption" display="block" color="text.secondary">
-              {t('auth.password')}: [rol]123 (ej: admin123, juez123, etc.)
+              {t('auth.password')}: {t('auth.demoPasswordFormat')}
             </Typography>
           </Box>
         </Paper>

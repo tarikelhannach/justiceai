@@ -14,7 +14,8 @@
     "refresh": "Actualizar",
     "close": "Cerrar",
     "yes": "Sí",
-    "no": "No"
+    "no": "No",
+    "user": "Usuario"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -40,7 +41,8 @@
     "passwordRequired": "La contraseña es requerida",
     "passwordsNotMatch": "Las contraseñas no coinciden",
     "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
-    "demoCredentials": "Credenciales de demostración"
+    "demoCredentials": "Credenciales de demostración",
+    "demoPasswordFormat": "[rol]123 (ej: admin123, juez123)"
   },
   "dashboard": {
     "title": "Dashboard de Administración",
@@ -109,5 +111,9 @@
     "users": "Usuarios",
     "settings": "Configuración",
     "profile": "Perfil"
+  },
+  "branding": {
+    "appName": "Justicia Digital",
+    "country": "Reino de Marruecos"
   }
 }

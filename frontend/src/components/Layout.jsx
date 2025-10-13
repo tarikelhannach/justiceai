@@ -29,7 +29,7 @@ import {
   ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
 
@@ -62,6 +62,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
   const theme = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
 
   const handleDrawerToggle = () => {
@@ -88,10 +89,10 @@ const Layout = ({ children, onToggleTheme, mode }) => {
         }}
       >
         <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-          🏛️ Justicia Digital
+          🏛️ {t('branding.appName')}
         </Typography>
         <Typography variant="caption" sx={{ opacity: 0.9 }}>
-          Reino de Marruecos
+          {t('branding.country')}
         </Typography>
       </Box>
 
@@ -124,7 +125,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
           </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {user?.name || 'Usuario'}
+              {user?.name || t('common.user')}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
               {user?.email || ''}
@@ -158,7 +159,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
                   },
                 },
               }}
-              selected={item.text === 'Dashboard'}
+              selected={location.pathname === item.path}
             >
               <ListItemIcon sx={{ color: theme.palette.primary.main }}>
                 {item.icon}
@@ -167,7 +168,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
                 primary={item.text}
                 primaryTypographyProps={{
                   fontSize: '0.95rem',
-                  fontWeight: item.text === 'Dashboard' ? 600 : 500,
+                  fontWeight: location.pathname === item.path ? 600 : 500,
                 }}
               />
             </ListItemButton>
@@ -195,7 +196,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
             <LogoutIcon />
           </ListItemIcon>
           <ListItemText
-            primary="Cerrar Sesión"
+            primary={t('auth.logout')}
             primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 500 }}
           />
         </ListItemButton>
@@ -227,7 +228,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Sistema Judicial Digital
+            {t('branding.appName')}
           </Typography>
           <LanguageSelector />
           <IconButton onClick={onToggleTheme} color="inherit" sx={{ ml: 1 }}>
