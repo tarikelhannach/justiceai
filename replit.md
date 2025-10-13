@@ -1,338 +1,7 @@
 # Sistema Judicial Digital - Marruecos
 
 ## Overview
-This is a comprehensive judicial system for Morocco, featuring a FastAPI backend and React frontend with Material-UI. The project includes case management, modern UI/UX, JWT authentication, and role-based access control for government use.
-
-## Project Status
-- **Frontend**: ✅ Running on port 5000 with React + Vite + Material-UI + React Router
-- **Backend**: ✅ Running on port 8000 with FastAPI + PostgreSQL + JWT Auth
-- **Database**: ✅ PostgreSQL configured with demo data
-- **Authentication**: ✅ JWT-based auth with login/register fully functional
-- **Deployment**: ✅ Configured for Autoscale
-
-## Current State - MVP Functional
-The MVP is now functional with:
-- ✅ Modern UI with dark/light theme, gradient design, glassmorphism effects
-- ✅ Complete authentication system (login/register/logout)
-- ✅ Secure REST API with role-based access control (RBAC)
-- ✅ Case management CRUD operations
-- ✅ PostgreSQL database with User, Case, Document, AuditLog models
-- ✅ Demo data populated (4 users, 3 cases)
-- ✅ Protected routes and authorization
-- ✅ Multi-language support (Spanish, French, Arabic) with RTL support
-- ✅ Document upload/download with RBAC validation
-
-## Recent Changes (October 13, 2025)
-
-### Role-Specific Dashboards ✅ LATEST
-- **Permission System**: Created `usePermissions` hook for frontend RBAC
-  - Verifies user roles and permissions for actions
-  - Constants for roles: ADMIN, JUDGE, LAWYER, CLERK, CITIZEN
-  - Permission checks: canViewAllCases, canEditCase, canDeleteCase, canAssignJudge, canManageUsers
-- **Dashboard Components**:
-  - `RoleDashboard.jsx`: Routes users to appropriate dashboard based on role
-  - `JudgeDashboard.jsx`: Shows only assigned cases, can change status
-  - `LawyerDashboard.jsx`: Shows only owned cases, can edit and upload documents
-  - `CitizenDashboard.jsx`: Shows only owned cases, read-only view with progress tracking
-  - `AdminDashboard.jsx`: Full system access (also used by clerks)
-- **Backend RBAC** (already implemented):
-  - GET `/api/cases/` automatically filters cases by role:
-    - Lawyers see only `Case.owner_id == user.id`
-    - Judges see only `Case.assigned_judge_id == user.id`
-    - Citizens see only `Case.owner_id == user.id`
-    - Admin/Clerk see all cases
-  - PUT `/api/cases/{id}` enforces field-level permissions:
-    - Lawyers/Citizens cannot modify status or assigned_judge
-    - Judges can modify all fields for assigned cases
-    - Admin/Clerk can modify all fields for all cases
-- **Security Improvements**:
-  - RoleDashboard default case shows error instead of granting admin access
-  - Unknown roles cannot access any dashboard
-  - Backend automatically filters data, frontend cannot bypass restrictions
-- **Translations**: Added dashboard-specific translations for all roles in ES/FR/AR
-  - `dashboard.judge`: Judge dashboard texts
-  - `dashboard.lawyer`: Lawyer dashboard texts
-  - `dashboard.citizen`: Citizen dashboard texts
-  - `cases.*`: Case-related translations for forms and displays
-
-### RTL (Right-to-Left) Fixes ✅
-- **Layout RTL Support**: Fixed sidebar and AppBar positioning for Arabic
-  - Drawer anchor changes from 'left' to 'right' in RTL mode
-  - AppBar margins adjust automatically (ml ↔ mr based on direction)
-  - Border positions flip correctly (borderRight ↔ borderLeft)
-  - Avatar and icon spacing adapts to RTL layout
-- **Direction Management**: Centralized in App.jsx via useEffect
-  - Single source of truth for document.dir and lang attributes
-  - LanguageSelector only handles i18n language switching
-  - Theme direction prop updates automatically based on selected language
-- **Complete RTL Coverage**: All UI components properly mirror in Arabic
-  - Sidebar navigation flows right-to-left
-  - Content area positions correctly with RTL drawer
-  - Icons, buttons, and spacing all RTL-compatible
-
-### Backend Implementation ✅
-- **Database Setup**: PostgreSQL with SQLAlchemy ORM
-- **Authentication**: JWT-based auth with password hashing (bcrypt)
-- **API Endpoints**:
-  - `/api/auth/login` - User login with JWT token
-  - `/api/auth/register` - User registration
-  - `/api/auth/me` - Get current user info
-  - `/api/auth/logout` - Logout and audit logging
-  - `/api/cases/` - CRUD operations for cases with RBAC
-  - `/api/cases/{id}` - Get/update/delete specific case
-  - `/api/cases/stats/summary` - Case statistics
-- **Security**: 
-  - Field-level permissions (citizens/lawyers cannot modify status or judge assignment)
-  - Role-based access control for all operations
-  - Judge assignment validation
-  - Deny-by-default for unknown roles
-  - Audit logging for all actions
-
-### Frontend Implementation ✅
-- **Modern UI Design**: 
-  - Purple gradient theme with glassmorphism
-  - Dark/light mode toggle with localStorage persistence
-  - Responsive sidebar navigation
-  - Modern cards, buttons, and animations
-- **Authentication UI**:
-  - Beautiful login/register form with tabs
-  - Form validation (password confirmation, length, required fields)
-  - Error handling with Spanish messages
-  - Demo user credentials displayed
-- **State Management**:
-  - AuthContext for authentication state
-  - Token persistence in localStorage
-  - Protected routes with redirect
-  - Automatic 401 handling
-- **API Integration**:
-  - Axios service with interceptors
-  - Bearer token authentication
-  - Error handling
-- **Dashboard Features**:
-  - Real-time case statistics from backend API
-  - Auto-refresh every 30 seconds
-  - Recent cases display with status, owner, and judge info
-  - Error handling with dismissible alerts
-  - Loading states and graceful fallbacks
-
-## Demo Users
-Access the system with these credentials:
-- **Admin**: `admin@justicia.ma` / `admin123`
-- **Judge**: `juez@justicia.ma` / `juez123`
-- **Lawyer**: `abogado@justicia.ma` / `abogado123`
-- **Clerk**: `secretario@justicia.ma` / `secretario123`
-
-## Project Architecture
-
-### Frontend (frontend/)
-- **Framework**: React 18 with Vite
-- **UI Library**: Material-UI (MUI) v5
-- **Routing**: React Router v6
-- **HTTP Client**: Axios
-- **Internationalization**: react-i18next with ES/FR/AR support
-- **Port**: 5000 (required for Replit)
-- **Host**: 0.0.0.0 (allows Replit proxy)
-- **Components**: 
-  - `Login.jsx`: Modern login/register form (translated)
-  - `Layout.jsx`: Sidebar navigation with user info and language selector
-  - `RoleDashboard.jsx`: Smart router to role-specific dashboards
-  - `AdminDashboard.jsx`: Admin/Clerk dashboard with full system access
-  - `JudgeDashboard.jsx`: Judge dashboard for assigned cases
-  - `LawyerDashboard.jsx`: Lawyer dashboard for owned cases
-  - `CitizenDashboard.jsx`: Citizen dashboard for case tracking
-  - `DocumentUpload.jsx`: Document upload dialog (translated)
-  - `LanguageSelector.jsx`: Language switcher with flags
-  - `AuthContext`: Authentication state management
-  - `api.js`: Axios API service
-- **Hooks**:
-  - `usePermissions.js`: RBAC permission checking hook
-- **i18n**:
-  - Configuration: `i18n/config.js`
-  - Translations: `i18n/locales/{es,fr,ar}.json`
-  - RTL support for Arabic via Material-UI theme
-
-### Backend (backend/)
-- **Framework**: FastAPI
-- **Python Version**: 3.11
-- **Database**: PostgreSQL (Replit hosted)
-- **ORM**: SQLAlchemy
-- **Authentication**: JWT with python-jose
-- **Password Hashing**: bcrypt via passlib
-- **Port**: 8000
-- **File Storage**: Local filesystem (/tmp/judicial_documents)
-- **Models**:
-  - `User`: Email, password, role (admin/judge/lawyer/clerk/citizen)
-  - `Case`: Case number, title, description, status, owner, assigned judge
-  - `Document`: File metadata, file path, size, mime type
-  - `AuditLog`: Complete audit trail of all actions
-- **Routes**:
-  - `auth.py`: Authentication endpoints
-  - `cases.py`: Case management with RBAC
-  - `documents.py`: Document upload/download with RBAC
-
-### Database Schema
-```
-Users
-  - id, email, name, hashed_password, role, is_active, is_verified
-
-Cases
-  - id, case_number, title, description, status, owner_id, assigned_judge_id
-  - Relationships: owner (User), assigned_judge (User), documents
-
-Documents
-  - id, filename, file_path, case_id, uploaded_by, ocr_text, is_signed
-
-AuditLogs
-  - id, user_id, action, resource_type, resource_id, ip_address, status
-```
-
-## Role-Based Access Control (RBAC)
-
-### Permissions by Role:
-- **Admin & Clerk**: Full access to all cases and all fields
-- **Judge**: Access to assigned cases, can modify status and details
-- **Lawyer**: Access to owned cases, can modify title/description only
-- **Citizen**: Access to owned cases, can modify title/description only
-
-### Security Features:
-- Field-level permissions prevent privilege escalation
-- Judge assignment validation (must be actual judge role)
-- Deny-by-default for unknown roles
-- Complete audit logging of all actions
-
-## How to Use
-
-### Running the Application
-Both frontend and backend are automatically started via configured workflows:
-- Frontend: `http://localhost:5000` (or Replit URL)
-- Backend API: `http://localhost:8000/api`
-- API Docs: `http://localhost:8000/docs` (when debug=true)
-
-### Making Changes
-- Frontend code: `frontend/src/`
-- Backend code: `backend/app/`
-- Database models: `backend/app/models.py`
-- API routes: `backend/app/routes/`
-- Auto-reload enabled on both services (HMR)
-
-### Database Management
-- Initialize DB: `python backend/init_db.py`
-- Models are in: `backend/app/models.py`
-- The database is automatically created on first run
-
-## File Structure
-```
-├── frontend/                  # React application
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   │   ├── Login.jsx    # Auth UI
-│   │   │   ├── Layout.jsx   # Sidebar layout
-│   │   │   └── AdminDashboard.jsx
-│   │   ├── context/         # React contexts
-│   │   │   └── AuthContext.jsx
-│   │   ├── services/        # API services
-│   │   │   └── api.js       # Axios client
-│   │   ├── App.jsx          # Main app with routing
-│   │   ├── main.jsx         # Entry point
-│   │   └── theme.js         # MUI theme config
-│   ├── vite.config.js       # Vite config (host: 0.0.0.0)
-│   └── package.json         # Dependencies
-├── backend/                  # FastAPI application
-│   ├── app/
-│   │   ├── main.py          # FastAPI app
-│   │   ├── models.py        # SQLAlchemy models
-│   │   ├── database.py      # DB connection
-│   │   ├── config.py        # Settings
-│   │   ├── routes/          # API routes
-│   │   │   ├── auth.py      # Authentication
-│   │   │   └── cases.py     # Case management
-│   │   └── auth/            # Auth utilities
-│   │       └── jwt.py       # JWT functions
-│   ├── init_db.py           # Database initialization
-│   └── requirements.txt     # Dependencies
-└── .gitignore              # Git ignore rules
-```
-
-## Deployment
-The project is configured for Autoscale deployment:
-- Build command: `npm run build --prefix frontend`
-- Run command: `npm run preview --prefix frontend -- --host 0.0.0.0 --port 5000`
-
-## Dependencies
-
-### Backend
-- fastapi
-- uvicorn
-- sqlalchemy
-- psycopg2-binary
-- python-jose[cryptography]
-- passlib[bcrypt]
-- python-multipart
-- pydantic[email]
-
-### Frontend
-- react
-- react-dom
-- react-router-dom
-- @mui/material
-- @emotion/react
-- @emotion/styled
-- @mui/icons-material
-- axios
-- i18next
-- react-i18next
-- i18next-browser-languagedetector
-
-## Next Steps for Full System
-
-### Immediate (MVP Complete)
-1. ✅ JWT Authentication
-2. ✅ Case Management API
-3. ✅ Modern UI/UX
-4. ✅ Role-Based Access Control
-
-### Phase 2 (Document Management) ✅ COMPLETED
-1. ✅ Document upload API endpoint with RBAC
-2. ✅ File storage integration (filesystem-based)
-3. ✅ Document upload component with drag-and-drop UI
-4. ✅ File download functionality with permissions
-5. ✅ Secure file management (50MB limit, type validation)
-
-### Phase 2.5 (Internationalization) ✅ COMPLETED
-1. ✅ Multi-language support (Spanish, French, Arabic)
-2. ✅ react-i18next integration with browser language detection
-3. ✅ Language selector with flags (ES 🇪🇸, FR 🇫🇷, AR 🇲🇦)
-4. ✅ RTL (Right-to-Left) support for Arabic
-5. ✅ Complete translations for all UI components
-6. ✅ Language persistence in localStorage
-
-### Phase 2.6 (Role-Based Dashboards) ✅ COMPLETED
-1. ✅ Role-specific dashboard components (Judge, Lawyer, Citizen, Admin)
-2. ✅ Permission system with usePermissions hook
-3. ✅ Backend RBAC with automatic case filtering
-4. ✅ Field-level permissions enforcement
-5. ✅ Security hardening (no admin fallback for unknown roles)
-6. ✅ Complete translations for role-specific features
-
-### Phase 3 (Advanced Features)
-1. OCR processing (Tesseract integration)
-2. Search functionality
-3. Notifications system
-4. Multi-language support (AR/FR/ES)
-5. Analytics and reporting
-
-### Future Enhancements
-1. Real-time updates (WebSockets)
-2. HSM digital signatures
-3. Elasticsearch for advanced search
-4. Redis for caching
-5. Celery for async tasks
-
-## Known Limitations
-1. Document upload not yet implemented (Phase 2)
-2. OCR features require Tesseract installation
-3. HSM features require hardware/cloud HSM integration
-4. Search limited to basic database queries
+This project is a comprehensive digital judicial system for Morocco, aiming to modernize the country's legal infrastructure. It features a FastAPI backend and a React frontend with Material-UI, designed for government use. Key capabilities include secure case management with JWT authentication, robust role-based access control (RBAC), multi-language support (Spanish, French, Arabic, including RTL), and a modern, intuitive user interface. The system streamlines judicial processes, enhances efficiency, and ensures secure access to legal information.
 
 ## User Preferences
 - **Languages**: Multi-language support (Spanish, French, Arabic)
@@ -341,3 +10,53 @@ The project is configured for Autoscale deployment:
 - **Authentication**: JWT-based with localStorage persistence
 - **RTL Support**: Automatic RTL layout for Arabic language
 - **Language Persistence**: Selected language stored in localStorage
+
+## System Architecture
+The system is built with a decoupled frontend and backend architecture.
+
+### UI/UX Decisions
+The frontend prioritizes a modern, responsive user experience with:
+- A purple gradient theme featuring glassmorphism effects.
+- Dark/light mode toggle with persistence.
+- Responsive sidebar navigation and dynamic content rendering.
+- Role-specific dashboards provide tailored experiences for Admin, Judge, Lawyer, and Citizen users.
+- Multi-language support with `react-i18next`, including full Right-to-Left (RTL) layout for Arabic.
+
+### Technical Implementations
+- **Frontend**: Developed using React 18 with Vite, Material-UI (MUI) v5 for UI components, React Router v6 for navigation, Axios for API communication, and `react-i18next` for internationalization.
+- **Backend**: Implemented with FastAPI, Python 3.11, SQLAlchemy for ORM, and PostgreSQL as the primary database.
+- **Authentication**: JWT-based authentication with `python-jose` and `passlib[bcrypt]` for secure password hashing.
+- **Role-Based Access Control (RBAC)**: Implemented on both frontend (`usePermissions` hook) and backend, ensuring granular access to features and data based on user roles (Admin, Judge, Lawyer, Clerk, Citizen). This includes field-level permissions and automatic filtering of data.
+- **Case Management**: Provides CRUD operations for cases, including advanced search functionalities with filters and RBAC.
+- **Document Management**: Supports secure document upload and download with RBAC validation, utilizing the local filesystem for storage.
+- **Internationalization**: Comprehensive support for Spanish, French, and Arabic, with dynamic language switching and RTL layout adjustments.
+
+### Feature Specifications
+- **Authentication**: User login, registration, and secure JWT token management.
+- **Case Operations**: Create, read, update, delete cases, with role-specific access and modification rights.
+- **Advanced Search**: Backend endpoint supporting complex queries across various case attributes, integrated with a debounced, auto-completing search bar on the frontend.
+- **Role-Specific Dashboards**: Dynamically routes users to tailored dashboards based on their assigned role, displaying only relevant information and actions.
+- **Audit Logging**: Comprehensive logging of all user actions for security and compliance.
+
+### System Design Choices
+- **Microservices-oriented**: Clear separation between frontend and backend.
+- **Scalability**: Configured for Autoscale deployment.
+- **Security-first**: Emphasizes JWT, RBAC, field-level permissions, and deny-by-default policies.
+- **Localization**: Designed for international use with robust multi-language and RTL support.
+
+## External Dependencies
+
+### Backend
+- **Framework**: `fastapi`, `uvicorn`
+- **Database ORM**: `sqlalchemy`
+- **Database Driver**: `psycopg2-binary` (PostgreSQL)
+- **Authentication**: `python-jose[cryptography]`, `passlib[bcrypt]`
+- **File Handling**: `python-multipart`
+- **Data Validation**: `pydantic[email]`
+
+### Frontend
+- **Framework**: `react`, `react-dom`, `vite`
+- **UI Library**: `@mui/material`, `@emotion/react`, `@emotion/styled`, `@mui/icons-material`
+- **Routing**: `react-router-dom`
+- **HTTP Client**: `axios`
+- **Internationalization**: `i18next`, `react-i18next`, `i18next-browser-languagedetector`
