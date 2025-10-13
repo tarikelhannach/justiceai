@@ -98,14 +98,16 @@ Access the system with these credentials:
 - **Authentication**: JWT with python-jose
 - **Password Hashing**: bcrypt via passlib
 - **Port**: 8000
+- **File Storage**: Local filesystem (/tmp/judicial_documents)
 - **Models**:
   - `User`: Email, password, role (admin/judge/lawyer/clerk/citizen)
   - `Case`: Case number, title, description, status, owner, assigned judge
-  - `Document`: File metadata and OCR text
+  - `Document`: File metadata, file path, size, mime type
   - `AuditLog`: Complete audit trail of all actions
 - **Routes**:
   - `auth.py`: Authentication endpoints
   - `cases.py`: Case management with RBAC
+  - `documents.py`: Document upload/download with RBAC
 
 ### Database Schema
 ```
@@ -225,11 +227,12 @@ The project is configured for Autoscale deployment:
 3. ✅ Modern UI/UX
 4. ✅ Role-Based Access Control
 
-### Phase 2 (Document Management)
-1. Document upload API endpoint
-2. File storage integration
-3. Document viewer component
-4. File download functionality
+### Phase 2 (Document Management) ✅ COMPLETED
+1. ✅ Document upload API endpoint with RBAC
+2. ✅ File storage integration (filesystem-based)
+3. ✅ Document upload component with drag-and-drop UI
+4. ✅ File download functionality with permissions
+5. ✅ Secure file management (50MB limit, type validation)
 
 ### Phase 3 (Advanced Features)
 1. OCR processing (Tesseract integration)
