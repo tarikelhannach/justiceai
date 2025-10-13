@@ -32,6 +32,8 @@ class User(Base):
     role = Column(Enum(UserRole), default=UserRole.CITIZEN, nullable=False)
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
+    totp_secret = Column(String(32), nullable=True)
+    totp_enabled = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
