@@ -44,6 +44,35 @@ The frontend prioritizes a modern, responsive user experience with:
 - **Security-first**: Emphasizes JWT, RBAC, field-level permissions, and deny-by-default policies.
 - **Localization**: Designed for international use with robust multi-language and RTL support.
 
+## Testing Infrastructure (Production Ready)
+
+### Test Organization
+- **Unit Tests**: `backend/tests/unit/` - Tests aislados de módulos
+- **Integration Tests**: `backend/tests/integration/` - Tests con servicios externos
+- **Security Tests**: `backend/tests/security/` - XSS, CSRF, SQL injection
+- **API Tests**: `backend/tests/api/` - Endpoints con todos los roles
+- **Performance Tests**: `backend/tests/performance/` - Carga y concurrencia
+
+### Test Fixtures
+Complete fixtures for all government roles:
+- **admin_user / admin_token / admin_headers** - Administrador
+- **judge_user / judge_token / judge_headers** - Juez
+- **lawyer_user / lawyer_token / lawyer_headers** - Abogado
+- **clerk_user / clerk_token / clerk_headers** - Secretario Judicial
+- **citizen_user / citizen_token / citizen_headers** - Ciudadano
+
+### Test Execution
+- **Run all tests**: `cd backend && ./run_tests.sh all`
+- **Unit tests only**: `./run_tests.sh unit`
+- **Security tests**: `./run_tests.sh security`
+- **Coverage report**: `./run_tests.sh coverage` (HTML: htmlcov/index.html)
+- **Target coverage**: ≥95% for production readiness
+
+### Mock Services
+- **Redis**: mock_redis fixture for caching
+- **Elasticsearch**: mock_elasticsearch for search
+- **HSM**: mock_hsm for digital signatures
+
 ## External Dependencies
 
 ### Backend
@@ -53,6 +82,7 @@ The frontend prioritizes a modern, responsive user experience with:
 - **Authentication**: `python-jose[cryptography]`, `passlib[bcrypt]`
 - **File Handling**: `python-multipart`
 - **Data Validation**: `pydantic[email]`
+- **Testing**: `pytest`, `pytest-asyncio`, `pytest-cov`, `factory-boy`, `faker`
 
 ### Frontend
 - **Framework**: `react`, `react-dom`, `vite`
