@@ -19,9 +19,11 @@ import {
   InsertDriveFile as FileIcon,
 } from '@mui/icons-material';
 import { documentsAPI } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -33,7 +35,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
     if (file) {
       const maxSize = 50 * 1024 * 1024;
       if (file.size > maxSize) {
-        setError('Archivo demasiado grande. Máximo 50MB');
+        setError(t('documents.fileTooBig'));
         return;
       }
       
@@ -49,7 +51,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
       ];
       
       if (!allowedTypes.includes(file.type)) {
-        setError('Tipo de archivo no permitido');
+        setError(t('documents.fileTypeNotAllowed'));
         return;
       }
       
@@ -60,7 +62,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setError('Por favor selecciona un archivo');
+      setError(t('documents.selectFile'));
       return;
     }
 
@@ -71,7 +73,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
       const response = await documentsAPI.uploadDocument(selectedFile, caseId);
       
       setProgress(100);
-      setSuccess(response.message || 'Documento subido exitosamente');
+      setSuccess(response.message || t('documents.uploadSuccess'));
       setSelectedFile(null);
       
       if (onUploadSuccess) {
@@ -88,7 +90,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
     } catch (err) {
       setUploading(false);
       setProgress(0);
-      setError(err.response?.data?.detail || 'Error al subir documento');
+      setError(err.response?.data?.detail || t('documents.uploadError'));
     }
   };
 
@@ -113,7 +115,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box display="flex" alignItems="center" gap={1}>
           <UploadIcon color="primary" />
-          <Typography variant="h6">Subir Documento</Typography>
+          <Typography variant="h6">{t('documents.upload')}</Typography>
         </Box>
         <IconButton onClick={handleClose} disabled={uploading} size="small">
           <CloseIcon />
@@ -173,10 +175,10 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
             <>
               <UploadIcon sx={{ fontSize: 64, color: theme.palette.primary.main, mb: 2 }} />
               <Typography variant="h6" gutterBottom>
-                Haz clic para seleccionar un archivo
+                {t('documents.clickToSelect')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                PDF, Word, Excel, Imágenes (Máx. 50MB)
+                {t('documents.allowedTypes')}
               </Typography>
             </>
           )}
@@ -186,7 +188,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
           <Box sx={{ mt: 3 }}>
             <LinearProgress variant="determinate" value={progress} sx={{ borderRadius: 1 }} />
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Subiendo... {progress}%
+              {t('documents.uploading')}... {progress}%
             </Typography>
           </Box>
         )}
@@ -194,7 +196,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
 
       <DialogActions>
         <Button onClick={handleClose} disabled={uploading}>
-          Cancelar
+          {t('common.cancel')}
         </Button>
         <Button
           onClick={handleUpload}
@@ -202,7 +204,7 @@ const DocumentUpload = ({ open, onClose, caseId = null, onUploadSuccess }) => {
           disabled={!selectedFile || uploading}
           startIcon={<UploadIcon />}
         >
-          {uploading ? 'Subiendo...' : 'Subir Documento'}
+          {uploading ? t('documents.uploading') : t('documents.uploadButton')}
         </Button>
       </DialogActions>
     </Dialog>
