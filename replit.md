@@ -27,10 +27,15 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 - **Internationalization**: Dynamic language switching and RTL adjustments for Spanish, French, and Arabic.
 
 ### Feature Specifications
-- **Authentication**: User login, registration, secure JWT token management with rate limiting.
+- **Authentication**: User login, registration, secure JWT token management with rate limiting, 2FA TOTP support, password reset flow, and "Remember Me" functionality.
+- **Two-Factor Authentication (2FA)**: TOTP-based 2FA with QR code generation, mobile app integration (Google Authenticator, Authy), and secure verification flow.
+- **Password Reset**: Complete password reset flow with email token generation, secure confirmation, and URL parameter support.
+- **Remember Me**: Email persistence in localStorage for improved UX.
 - **Case Operations**: Role-specific CRUD and modification rights for cases.
 - **Advanced Search**: Backend endpoint for complex queries, integrated with a debounced, auto-completing frontend search bar.
 - **Role-Specific Dashboards**: Dynamically routes users to tailored dashboards.
+- **Breadcrumb Navigation**: Dynamic breadcrumb navigation based on current route with RTL support and clickable navigation.
+- **PrivateRoute Component**: Enhanced route protection with RBAC validation, role-specific access control, and detailed "Access Denied" screens.
 - **Audit Dashboard**: Comprehensive audit system with visualization, advanced filtering, pagination, and RBAC (admin/clerk).
 - **Audit Logging**: Comprehensive logging of all user actions in PostgreSQL for security and compliance.
 - **Rate Limiting**: Implemented with SlowAPI to prevent brute force attacks and spam, with tiered limits.
@@ -47,9 +52,11 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 - **Framework**: `fastapi`, `uvicorn`
 - **Database ORM**: `sqlalchemy`
 - **Database Driver**: `psycopg2-binary` (PostgreSQL)
-- **Authentication**: `python-jose[cryptography]`, `passlib[bcrypt]`
+- **Authentication**: `python-jose[cryptography]`, `passlib[bcrypt]`, `pyotp`, `qrcode[pil]`
 - **File Handling**: `python-multipart`
 - **Data Validation**: `pydantic[email]`
+- **Rate Limiting**: `slowapi`
+- **Caching**: `redis`
 
 ### Frontend
 - **Framework**: `react`, `react-dom`, `vite`
