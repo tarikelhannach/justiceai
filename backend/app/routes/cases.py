@@ -98,6 +98,96 @@ async def get_cases(
     
     return result
 
+@router.get("/search/", response_model=List[CaseResponse])
+async def search_cases(
+    query: Optional[str] = None,
+    status: Optional[CaseStatus] = None,
+    assigned_judge_id: Optional[int] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Buscar casos con filtros avanzados"""
+    # Start with base query
+    base_query = db.query(Case)
+    
+    # Apply role-based filtering (same as get_cases)
+    if current_user.role == UserRole.LAWYER:
+        base_query = base_query.filter(Case.owner_id == current_user.id)
+    elif current_user.role == UserRole.JUDGE:
+        base_query = base_query.filter(Case.assigned_judge_id == current_user.id)
+    elif current_user.role == UserRole.CLERK:
+        pass
+    elif current_user.role == UserRole.ADMIN:
+        pass
+    else:
+        base_query = base_query.filter(Case.owner_id == current_user.id)
+    
+    # Apply search filters
+    if query:
+        search_filter = (
+            Case.case_number.ilike(f"%{query}%") |
+            Case.title.ilike(f"%{query}%") |
+            Case.description.ilike(f"%{query}%")
+        )
+        base_query = base_query.filter(search_filter)
+    
+    if status:
+        base_query = base_query.filter(Case.status == status)
+    
+    if assigned_judge_id:
+        base_query = base_query.filter(Case.assigned_judge_id == assigned_judge_id)
+    
+    if start_date:
+        try:
+            start_datetime = datetime.fromisoformat(start_date)
+            base_query = base_query.filter(Case.created_at >= start_datetime)
+        except ValueError:
+            pass
+    
+    if end_date:
+        try:
+            end_datetime = datetime.fromisoformat(end_date)
+            base_query = base_query.filter(Case.created_at <= end_datetime)
+        except ValueError:
+            pass
+    
+    # Execute query with pagination
+    cases = base_query.offset(skip).limit(limit).all()
+    
+    # Format response
+    result = []
+    for case in cases:
+        case_dict = {
+            "id": case.id,
+            "case_number": case.case_number,
+            "title": case.title,
+            "description": case.description,
+            "status": case.status.value,
+            "owner_id": case.owner_id,
+            "assigned_judge_id": case.assigned_judge_id,
+            "created_at": case.created_at,
+            "updated_at": case.updated_at,
+            "owner": {
+                "id": case.owner.id,
+                "name": case.owner.name,
+                "email": case.owner.email,
+                "role": case.owner.role.value
+            },
+            "assigned_judge": {
+                "id": case.assigned_judge.id,
+                "name": case.assigned_judge.name,
+                "email": case.assigned_judge.email,
+                "role": case.assigned_judge.role.value
+            } if case.assigned_judge else None
+        }
+        result.append(case_dict)
+    
+    return result
+
 @router.get("/{case_id}", response_model=CaseResponse)
 async def get_case(
     case_id: int,
