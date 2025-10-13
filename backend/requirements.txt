@@ -10,7 +10,7 @@ alembic==1.12.1
 asyncpg==0.28.0
 
 # Cache & Message Queue
-redis==5.0.1
+redis==4.6.0
 celery[redis]==5.3.4
 kombu==5.3.2
 
