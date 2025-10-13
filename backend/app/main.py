@@ -7,6 +7,11 @@ from contextlib import asynccontextmanager
 import logging
 import os
 from datetime import datetime
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+from .middleware.rate_limit import ip_limiter, user_limiter, strict_limiter
 
 # Setup logging básico
 logging.basicConfig(
@@ -49,6 +54,17 @@ app = FastAPI(
     redoc_url="/redoc" if settings.debug else None,
     lifespan=lifespan
 )
+
+# Configure rate limiters
+app.state.limiter = user_limiter
+app.state.ip_limiter = ip_limiter
+app.state.strict_limiter = strict_limiter
+
+# Add rate limit exception handler
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add SlowAPI middleware for automatic rate limit headers
+app.add_middleware(SlowAPIMiddleware)
 
 # CORS configurado para Marruecos - Allow all origins in development
 app.add_middleware(
@@ -114,12 +130,13 @@ async def get_metrics():
     }
 
 # Include routers
-from .routes import auth, cases, documents, users
+from .routes import auth, cases, documents, users, audit
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(cases.router, prefix="/api")
 app.include_router(documents.router)
 app.include_router(users.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")
 
 # Global exception handler
 @app.exception_handler(Exception)

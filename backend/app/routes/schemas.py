@@ -5,7 +5,35 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
-from ..models import UserRole, CaseStatus, CaseType, Priority, DocumentType, SignatureStatus
+from ..models import UserRole, CaseStatus
+
+# Define missing enums locally
+class CaseType(str, Enum):
+    CIVIL = "civil"
+    CRIMINAL = "criminal"
+    COMMERCIAL = "commercial"
+    ADMINISTRATIVE = "administrative"
+    FAMILY = "family"
+    OTHER = "other"
+
+class Priority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+class DocumentType(str, Enum):
+    COMPLAINT = "complaint"
+    EVIDENCE = "evidence"
+    RULING = "ruling"
+    APPEAL = "appeal"
+    OTHER = "other"
+
+class SignatureStatus(str, Enum):
+    UNSIGNED = "unsigned"
+    SIGNED = "signed"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
 
 # ========================================
 # SCHEMAS DE USUARIO

@@ -32,17 +32,45 @@ The frontend prioritizes a modern, responsive user experience with:
 - **Internationalization**: Comprehensive support for Spanish, French, and Arabic, with dynamic language switching and RTL layout adjustments.
 
 ### Feature Specifications
-- **Authentication**: User login, registration, and secure JWT token management.
+- **Authentication**: User login, registration, and secure JWT token management with rate limiting (5 login attempts/minute, 3 registrations/hour per IP).
 - **Case Operations**: Create, read, update, delete cases, with role-specific access and modification rights.
 - **Advanced Search**: Backend endpoint supporting complex queries across various case attributes, integrated with a debounced, auto-completing search bar on the frontend.
 - **Role-Specific Dashboards**: Dynamically routes users to tailored dashboards based on their assigned role, displaying only relevant information and actions.
-- **Audit Logging**: Comprehensive logging of all user actions for security and compliance.
+- **Audit Dashboard**: Complete audit system with visualization (Recharts), advanced filtering, pagination with AbortController to prevent race conditions, and RBAC (admin/clerk access). Includes stats, action types, resource types, and comprehensive log search.
+- **Audit Logging**: Comprehensive logging of all user actions for security and compliance, with structured storage in PostgreSQL.
+- **Rate Limiting**: Comprehensive rate limiting using SlowAPI to prevent brute force attacks and spam, with tiered limits for different endpoints and user types.
 
 ### System Design Choices
 - **Microservices-oriented**: Clear separation between frontend and backend.
 - **Scalability**: Configured for Autoscale deployment.
-- **Security-first**: Emphasizes JWT, RBAC, field-level permissions, and deny-by-default policies.
+- **Security-first**: Emphasizes JWT, RBAC, field-level permissions, deny-by-default policies, and rate limiting.
 - **Localization**: Designed for international use with robust multi-language and RTL support.
+
+## Security Features (Production Ready)
+
+### Rate Limiting & DDoS Protection
+- **Implementation**: SlowAPI (0.1.9) with in-memory storage (production uses Redis)
+- **Login Protection**: 5 attempts/minute per IP (brute force prevention)
+- **Registration Protection**: 3 attempts/hour per IP (spam prevention)
+- **API Rate Limits**: 
+  - Authenticated users: 100 requests/minute per user
+  - Anonymous users: 20 requests/minute per IP
+- **Response Headers**: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+- **Proxy Support**: Handles X-Forwarded-For and X-Real-IP headers correctly
+
+### Rate Limit Configuration
+```python
+# Login endpoint
+@ip_limiter.limit("5/minute")  # By IP
+async def login(...)
+
+# Register endpoint  
+@ip_limiter.limit("3/hour")  # By IP
+
+# API endpoints
+@user_limiter.limit("100/minute")  # By user/IP
+async def api_endpoint(...)
+```
 
 ## Testing Infrastructure (Production Ready)
 
@@ -72,6 +100,30 @@ Complete fixtures for all government roles:
 - **Redis**: mock_redis fixture for caching
 - **Elasticsearch**: mock_elasticsearch for search
 - **HSM**: mock_hsm for digital signatures
+
+## Code Quality & Standards
+
+### Linting Tools (Production Ready)
+- **Black**: Code formatter with line-length 100
+- **isort**: Import sorting compatible with Black
+- **Flake8**: Style guide enforcement (E501, W503 ignored for Black compatibility)
+- **mypy**: Static type checking with strict mode
+- **Bandit**: Security vulnerability scanning
+- **pre-commit**: Automated hooks for all linters
+
+### Quality Commands
+- **Format code**: `cd backend && black . && isort .`
+- **Check style**: `flake8 .`
+- **Type check**: `mypy app/`
+- **Security scan**: `bandit -r app/`
+- **Pre-commit setup**: `pre-commit install && pre-commit run --all-files`
+- **Full quality check**: `./check_quality.sh` (runs all tools)
+
+### Standards
+- Line length: 100 characters
+- Type hints: Required for all functions
+- Docstrings: Google style for public APIs
+- Security: No hardcoded secrets, SQL injection prevention
 
 ## External Dependencies
 

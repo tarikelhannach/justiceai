@@ -9,7 +9,8 @@ import json
 
 from app.database import get_db
 from app.models import AuditLog, User, UserRole
-from app.auth.auth import get_current_user, require_role
+from app.auth.auth import get_current_user
+from app.auth.jwt import require_role
 from app.routes.schemas import AuditLogResponse, AuditLogCreate, AuditLogStats
 
 router = APIRouter(prefix="/audit", tags=["audit"])

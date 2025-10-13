@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 
@@ -12,6 +12,7 @@ from ..auth.jwt import (
     get_current_user
 )
 from ..config import settings
+from ..middleware.rate_limit import ip_limiter
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -42,16 +43,17 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 @router.post("/login", response_model=TokenResponse)
-async def login(request: LoginRequest, db: Session = Depends(get_db)):
-    """Iniciar sesión"""
-    user = db.query(User).filter(User.email == request.email).first()
+@ip_limiter.limit("5/minute")  # Max 5 login attempts per minute per IP
+async def login(request: Request, login_data: LoginRequest, db: Session = Depends(get_db)):
+    """Iniciar sesión con rate limiting (5 intentos/minuto por IP)"""
+    user = db.query(User).filter(User.email == login_data.email).first()
     
-    if not user or not verify_password(request.password, user.hashed_password):
+    if not user or not verify_password(login_data.password, user.hashed_password):
         # Log failed login attempt
         audit_log = AuditLog(
             action="login_failed",
             resource_type="auth",
-            details=f"Failed login attempt for {request.email}",
+            details=f"Failed login attempt for {login_data.email}",
             status="failed"
         )
         db.add(audit_log)
@@ -99,10 +101,11 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
     }
 
 @router.post("/register", response_model=TokenResponse)
-async def register(request: RegisterRequest, db: Session = Depends(get_db)):
-    """Registrar nuevo usuario"""
+@ip_limiter.limit("3/hour")  # Max 3 registrations per hour per IP
+async def register(request: Request, register_data: RegisterRequest, db: Session = Depends(get_db)):
+    """Registrar nuevo usuario con rate limiting (3 registros/hora por IP)"""
     # Check if user already exists
-    existing_user = db.query(User).filter(User.email == request.email).first()
+    existing_user = db.query(User).filter(User.email == register_data.email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -111,10 +114,10 @@ async def register(request: RegisterRequest, db: Session = Depends(get_db)):
     
     # Create new user
     new_user = User(
-        email=request.email,
-        name=request.name,
-        hashed_password=get_password_hash(request.password[:72]),
-        role=request.role,
+        email=register_data.email,
+        name=register_data.name,
+        hashed_password=get_password_hash(register_data.password[:72]),
+        role=register_data.role,
         is_active=True,
         is_verified=False
     )
