@@ -261,6 +261,9 @@ async def delete_document(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    from app.core.cache import get_cache_manager
+    cache = get_cache_manager()
+    
     document = db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
     
     if not document:
@@ -281,12 +284,16 @@ async def delete_document(
             raise HTTPException(status_code=403, detail="No autorizado para eliminar este documento")
     
     try:
+        case_id = document.case_id
+        
         file_path = Path(document.file_path)
         if file_path.exists():
             file_path.unlink()
         
         db.delete(document)
         db.commit()
+        
+        await cache.invalidate_document(document_id, case_id)
         
         return {"message": "Documento eliminado exitosamente"}
     

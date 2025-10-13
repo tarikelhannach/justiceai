@@ -367,6 +367,8 @@ async def update_case(
     db: Session = Depends(get_db)
 ):
     """Actualizar un caso existente"""
+    from app.core.cache import get_cache_manager
+    cache = get_cache_manager()
     case = db.query(Case).filter(Case.id == case_id).first()
     
     if not case:
@@ -461,6 +463,8 @@ async def update_case(
     db.commit()
     db.refresh(case)
     
+    await cache.invalidate_case(case_id)
+    
     # Log case update
     audit_log = AuditLog(
         user_id=current_user.id,
@@ -504,6 +508,8 @@ async def delete_case(
     db: Session = Depends(get_db)
 ):
     """Eliminar un caso (solo admin o clerk)"""
+    from app.core.cache import get_cache_manager
+    cache = get_cache_manager()
     case = db.query(Case).filter(Case.id == case_id).first()
     
     if not case:
@@ -525,6 +531,8 @@ async def delete_case(
     
     db.delete(case)
     db.commit()
+    
+    await cache.invalidate_case(case_id)
     
     return {"message": f"Caso {case.case_number} eliminado exitosamente"}
 
