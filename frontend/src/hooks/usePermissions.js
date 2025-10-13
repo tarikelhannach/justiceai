@@ -116,6 +116,25 @@ export const usePermissions = () => {
     return false;
   };
   
+  // Alias for canUpdateCase (used in CasesList)
+  const canEditCase = canUpdateCase;
+  
+  // Check if user can assign judges
+  const canAssignJudge = () => {
+    return hasPermission('ASSIGN_JUDGE');
+  };
+  
+  // Check if user can upload documents
+  const canUploadDocument = () => {
+    return hasPermission('UPLOAD_DOCUMENT');
+  };
+  
+  // Check if user can delete documents
+  const canDeleteDocument = (documentData) => {
+    if (!user || !documentData) return false;
+    return hasPermission('DELETE_DOCUMENT');
+  };
+  
   return {
     hasPermission,
     hasAnyPermission,
@@ -124,8 +143,12 @@ export const usePermissions = () => {
     hasAnyRole,
     canViewCase,
     canUpdateCase,
+    canEditCase,
     canDeleteCase,
     canChangeCaseStatus,
+    canAssignJudge,
+    canUploadDocument,
+    canDeleteDocument,
     user,
     ROLES,
   };
