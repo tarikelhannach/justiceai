@@ -118,7 +118,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
               bgcolor: theme.palette.primary.main,
               width: 40,
               height: 40,
-              mr: 1.5,
+              ...(theme.direction === 'rtl' ? { ml: 1.5 } : { mr: 1.5 }),
             }}
           >
             {user?.name?.charAt(0).toUpperCase() || 'U'}
@@ -204,6 +204,8 @@ const Layout = ({ children, onToggleTheme, mode }) => {
     </Box>
   );
 
+  const isRtl = theme.direction === 'rtl';
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* AppBar */}
@@ -211,7 +213,10 @@ const Layout = ({ children, onToggleTheme, mode }) => {
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
+          ...(isRtl 
+            ? { mr: { sm: `${drawerWidth}px` } }
+            : { ml: { sm: `${drawerWidth}px` } }
+          ),
           bgcolor: theme.palette.background.paper,
           color: theme.palette.text.primary,
           boxShadow: theme.shadows[1],
@@ -223,7 +228,10 @@ const Layout = ({ children, onToggleTheme, mode }) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ 
+              ...(isRtl ? { ml: 2 } : { mr: 2 }), 
+              display: { sm: 'none' } 
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -231,7 +239,9 @@ const Layout = ({ children, onToggleTheme, mode }) => {
             {t('branding.appName')}
           </Typography>
           <LanguageSelector />
-          <IconButton onClick={onToggleTheme} color="inherit" sx={{ ml: 1 }}>
+          <IconButton onClick={onToggleTheme} color="inherit" sx={{ 
+            ...(isRtl ? { mr: 1 } : { ml: 1 })
+          }}>
             {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Toolbar>
@@ -244,6 +254,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
       >
         <Drawer
           variant="temporary"
+          anchor={isRtl ? 'right' : 'left'}
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
@@ -261,12 +272,16 @@ const Layout = ({ children, onToggleTheme, mode }) => {
         </Drawer>
         <Drawer
           variant="permanent"
+          anchor={isRtl ? 'right' : 'left'}
           sx={{
             display: { xs: 'none', sm: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
-              borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              ...(isRtl 
+                ? { borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)}` }
+                : { borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}` }
+              ),
             },
           }}
           open
