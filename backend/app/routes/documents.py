@@ -120,11 +120,23 @@ async def upload_document(
         db.commit()
         db.refresh(new_document)
         
+        try:
+            from app.tasks.ocr_tasks import process_document_ocr, index_document_elasticsearch
+            from celery import chord
+            
+            workflow = chord([process_document_ocr.s(new_document.id)], 
+                           index_document_elasticsearch.s())
+            result = workflow.apply_async()
+            
+            message = f"Documento subido exitosamente. OCR en proceso (task_id: {result.id})"
+        except Exception as e:
+            message = f"Documento subido exitosamente. OCR no disponible: {str(e)}"
+        
         return DocumentUploadResponse(
             id=new_document.id,
             filename=new_document.filename,
             file_path=new_document.file_path,
-            message="Documento subido exitosamente"
+            message=message
         )
     
     except Exception as e:
