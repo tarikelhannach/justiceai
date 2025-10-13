@@ -3,6 +3,6 @@
 Routers para el Sistema Judicial Digital
 """
 
-from . import auth, cases, documents, search, audit, hsm
+from . import auth, cases
 
-__all__ = ["auth", "cases", "documents", "search", "audit", "hsm"]
+__all__ = ["auth", "cases"]
