@@ -113,33 +113,27 @@ const Login = () => {
     setSuccess('');
     setLoading(true);
 
-    try {
-      const result = await authAPI.loginWith2FA(
-        loginForm.email,
-        loginForm.password,
-        loginForm.totp_code || null
-      );
+    const result = await login(
+      loginForm.email,
+      loginForm.password,
+      loginForm.totp_code || null
+    );
 
+    if (result.success) {
       if (loginForm.rememberMe) {
         localStorage.setItem('remembered_email', loginForm.email);
       } else {
         localStorage.removeItem('remembered_email');
       }
-
-      localStorage.setItem('token', result.access_token);
-      localStorage.setItem('user', JSON.stringify(result.user));
-      
       navigate('/');
-    } catch (err) {
-      if (err.response?.status === 428) {
+    } else {
+      if (result.requires2FA) {
         setRequires2FA(true);
-        setError(t('auth.require2FA') || 'Se requiere código 2FA');
-      } else {
-        setError(err.response?.data?.detail || t('auth.loginError'));
       }
-    } finally {
-      setLoading(false);
+      setError(result.error);
     }
+    
+    setLoading(false);
   };
 
   const handleRegister = async (e) => {
