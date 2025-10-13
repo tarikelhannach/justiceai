@@ -1,25 +1,32 @@
-import React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import React, { useState, useMemo } from 'react';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { createAppTheme } from './theme';
+import Layout from './components/Layout';
 import AdminDashboard from './components/AdminDashboard';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
-
 function App() {
+  const [mode, setMode] = useState(() => {
+    const savedMode = localStorage.getItem('themeMode');
+    return savedMode || 'light';
+  });
+
+  const theme = useMemo(() => createAppTheme(mode), [mode]);
+
+  const toggleTheme = () => {
+    setMode((prevMode) => {
+      const newMode = prevMode === 'light' ? 'dark' : 'light';
+      localStorage.setItem('themeMode', newMode);
+      return newMode;
+    });
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AdminDashboard />
+      <Layout onToggleTheme={toggleTheme} mode={mode}>
+        <AdminDashboard />
+      </Layout>
     </ThemeProvider>
   );
 }
