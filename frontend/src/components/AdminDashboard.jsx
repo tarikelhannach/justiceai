@@ -32,10 +32,12 @@ import {
 import { casesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import DocumentUpload from './DocumentUpload';
+import { useTranslation } from 'react-i18next';
 
 const AdminDashboard = () => {
   const theme = useTheme();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -70,7 +72,7 @@ const AdminDashboard = () => {
 
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
-      setError(err.response?.data?.detail || 'Error al cargar datos del dashboard');
+      setError(err.response?.data?.detail || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -89,11 +91,11 @@ const AdminDashboard = () => {
 
   const getStatusLabel = (status) => {
     const labels = {
-      pending: 'Pendiente',
-      in_progress: 'En Progreso',
-      resolved: 'Resuelto',
-      closed: 'Cerrado',
-      archived: 'Archivado',
+      pending: t('status.pending'),
+      in_progress: t('status.in_progress'),
+      resolved: t('status.resolved'),
+      closed: t('status.closed'),
+      archived: t('status.archived'),
     };
     return labels[status] || status;
   };
@@ -160,7 +162,7 @@ const AdminDashboard = () => {
     return (
       <Box>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-          Dashboard de Administración
+          {t('dashboard.title')}
         </Typography>
         <LinearProgress sx={{ mt: 2, borderRadius: 1 }} />
       </Box>
@@ -172,10 +174,10 @@ const AdminDashboard = () => {
       {/* Header */}
       <Box mb={4}>
         <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-          Dashboard de Administración
+          {t('dashboard.title')}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Bienvenido {user?.name} - {user?.role === 'admin' ? 'Administrador' : user?.role} 🇲🇦
+          {t('common.welcome')} {user?.name} - {t(`roles.${user?.role}`)} 🇲🇦
         </Typography>
       </Box>
 
@@ -205,12 +207,12 @@ const AdminDashboard = () => {
               disabled={loading}
               sx={{ fontWeight: 600 }}
             >
-              Actualizar
+              {t('common.refresh')}
             </Button>
           }
         >
           <Typography variant="body2" fontWeight={600}>
-            Sistema Operativo - Base de datos conectada
+            {t('dashboard.systemStatus')}
           </Typography>
         </Alert>
       </Box>
@@ -219,56 +221,56 @@ const AdminDashboard = () => {
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Total de Casos"
+            title={t('dashboard.totalCases')}
             value={stats.total}
             icon={GavelIcon}
             color="primary"
-            trend={`${stats.total} casos en el sistema`}
+            trend={`${stats.total} ${t('dashboard.casesInSystem')}`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Casos Pendientes"
+            title={t('dashboard.pendingCases')}
             value={stats.pending}
             icon={PendingIcon}
             color="warning"
-            trend={`${stats.pending} esperando asignación`}
+            trend={`${stats.pending} ${t('dashboard.waitingAssignment')}`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="En Progreso"
+            title={t('dashboard.inProgress')}
             value={stats.in_progress}
             icon={TrendingUpIcon}
             color="info"
-            trend={`${stats.in_progress} activos`}
+            trend={`${stats.in_progress} ${t('dashboard.active')}`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Casos Resueltos"
+            title={t('dashboard.resolvedCases')}
             value={stats.resolved}
             icon={CheckCircleIcon}
             color="success"
-            trend={`${stats.resolved} completados`}
+            trend={`${stats.resolved} ${t('dashboard.completed')}`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Casos Cerrados"
+            title={t('dashboard.closedCases')}
             value={stats.closed}
             icon={SecurityIcon}
             color="secondary"
-            trend={`${stats.closed} archivados`}
+            trend={`${stats.closed} ${t('dashboard.archived')}`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
           <StatCard
-            title="Tasa de Resolución"
+            title={t('dashboard.resolutionRate')}
             value={stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}
             icon={DescriptionIcon}
             color="secondary"
-            trend={`${stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}% completado`}
+            trend={`${stats.total > 0 ? Math.round((stats.resolved / stats.total) * 100) : 0}% ${t('dashboard.completed')}`}
           />
         </Grid>
       </Grid>
@@ -277,23 +279,23 @@ const AdminDashboard = () => {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-            Casos Recientes
+            {t('dashboard.recentCases')}
           </Typography>
           {recentCases.length === 0 ? (
             <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-              No hay casos disponibles
+              {t('dashboard.noCases')}
             </Typography>
           ) : (
             <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>Número</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Título</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Propietario</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Juez Asignado</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Estado</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Fecha</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.caseNumber')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.title')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.owner')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.assignedJudge')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.status')}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.date')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -323,7 +325,7 @@ const AdminDashboard = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {caseItem.assigned_judge?.name || 'Sin asignar'}
+                          {caseItem.assigned_judge?.name || t('dashboard.notAssigned')}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -357,7 +359,7 @@ const AdminDashboard = () => {
       >
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-            Acciones Rápidas
+            {t('dashboard.quickActions')}
           </Typography>
           <Box display="flex" gap={2} flexWrap="wrap" mt={2}>
             <Button
@@ -371,7 +373,7 @@ const AdminDashboard = () => {
               }}
               startIcon={<GavelIcon />}
             >
-              Nuevo Caso
+              {t('dashboard.newCase')}
             </Button>
             <Button
               variant="outlined"
@@ -386,7 +388,7 @@ const AdminDashboard = () => {
               startIcon={<DescriptionIcon />}
               onClick={() => setUploadDialogOpen(true)}
             >
-              Subir Documento
+              {t('dashboard.uploadDocument')}
             </Button>
             <Button
               variant="outlined"
@@ -400,7 +402,7 @@ const AdminDashboard = () => {
               }}
               startIcon={<PeopleIcon />}
             >
-              Gestionar Usuarios
+              {t('dashboard.manageUsers')}
             </Button>
           </Box>
         </CardContent>
