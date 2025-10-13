@@ -32,6 +32,7 @@ import {
 import { casesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import DocumentUpload from './DocumentUpload';
+import SearchBar from './SearchBar';
 import { useTranslation } from 'react-i18next';
 
 const AdminDashboard = () => {
@@ -47,6 +48,7 @@ const AdminDashboard = () => {
   });
 
   const [recentCases, setRecentCases] = useState([]);
+  const [searchResults, setSearchResults] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -181,6 +183,9 @@ const AdminDashboard = () => {
         </Typography>
       </Box>
 
+      {/* Search Bar */}
+      <SearchBar onSearchResults={setSearchResults} />
+
       {/* Error Alert */}
       {error && (
         <Box mb={4}>
@@ -275,15 +280,15 @@ const AdminDashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Casos Recientes */}
+      {/* Casos Recientes / Resultados de Búsqueda */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-            {t('dashboard.recentCases')}
+            {searchResults ? t('search.results', 'Resultados de Búsqueda') : t('dashboard.recentCases')}
           </Typography>
-          {recentCases.length === 0 ? (
+          {(searchResults || recentCases).length === 0 ? (
             <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-              {t('dashboard.noCases')}
+              {searchResults ? t('search.noResults', 'No se encontraron resultados') : t('dashboard.noCases')}
             </Typography>
           ) : (
             <TableContainer>
@@ -299,7 +304,7 @@ const AdminDashboard = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {recentCases.map((caseItem) => (
+                  {(searchResults || recentCases).map((caseItem) => (
                     <TableRow
                       key={caseItem.id}
                       sx={{

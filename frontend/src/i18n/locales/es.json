@@ -16,7 +16,17 @@
     "yes": "Sí",
     "no": "No",
     "user": "Usuario",
-    "actions": "Acciones"
+    "actions": "Acciones",
+    "all": "Todos"
+  },
+  "search": {
+    "placeholder": "Buscar por número, título o descripción...",
+    "advancedFilters": "Filtros Avanzados",
+    "startDate": "Fecha Inicio",
+    "endDate": "Fecha Fin",
+    "applyFilters": "Aplicar Filtros",
+    "results": "Resultados de Búsqueda",
+    "noResults": "No se encontraron resultados"
   },
   "auth": {
     "login": "Iniciar Sesión",

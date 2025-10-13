@@ -16,7 +16,17 @@
     "yes": "Oui",
     "no": "Non",
     "user": "Utilisateur",
-    "actions": "Actions"
+    "actions": "Actions",
+    "all": "Tous"
+  },
+  "search": {
+    "placeholder": "Rechercher par numéro, titre ou description...",
+    "advancedFilters": "Filtres Avancés",
+    "startDate": "Date de Début",
+    "endDate": "Date de Fin",
+    "applyFilters": "Appliquer les Filtres",
+    "results": "Résultats de Recherche",
+    "noResults": "Aucun résultat trouvé"
   },
   "auth": {
     "login": "Se Connecter",
