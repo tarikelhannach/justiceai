@@ -30,16 +30,18 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from './LanguageSelector';
 
 const drawerWidth = 280;
 
-const getRoleLabel = (role) => {
+const getRoleLabel = (role, t) => {
   const roles = {
-    admin: 'Administrador',
-    judge: 'Juez',
-    lawyer: 'Abogado',
-    clerk: 'Secretario',
-    citizen: 'Ciudadano',
+    admin: t('roles.admin'),
+    judge: t('roles.judge'),
+    lawyer: t('roles.lawyer'),
+    clerk: t('roles.clerk'),
+    citizen: t('roles.citizen'),
   };
   return roles[role] || role;
 };
@@ -60,17 +62,18 @@ const Layout = ({ children, onToggleTheme, mode }) => {
   const theme = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'Casos Judiciales', icon: <GavelIcon />, path: '/casos' },
-    { text: 'Documentos', icon: <DescriptionIcon />, path: '/documentos' },
-    { text: 'Usuarios', icon: <PeopleIcon />, path: '/usuarios' },
-    { text: 'Configuración', icon: <SettingsIcon />, path: '/configuracion' },
+    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/' },
+    { text: t('navigation.cases'), icon: <GavelIcon />, path: '/casos' },
+    { text: t('navigation.documents'), icon: <DescriptionIcon />, path: '/documentos' },
+    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/usuarios' },
+    { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/configuracion' },
   ];
 
   const drawer = (
@@ -127,7 +130,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
               {user?.email || ''}
             </Typography>
             <Chip 
-              label={getRoleLabel(user?.role)}
+              label={getRoleLabel(user?.role, t)}
               size="small"
               color={getRoleColor(user?.role)}
               sx={{ mt: 0.5, height: 20, fontSize: '0.7rem' }}
@@ -226,7 +229,8 @@ const Layout = ({ children, onToggleTheme, mode }) => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Sistema Judicial Digital
           </Typography>
-          <IconButton onClick={onToggleTheme} color="inherit">
+          <LanguageSelector />
+          <IconButton onClick={onToggleTheme} color="inherit" sx={{ ml: 1 }}>
             {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Toolbar>
