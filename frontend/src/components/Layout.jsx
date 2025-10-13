@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Drawer,
@@ -16,6 +16,8 @@ import {
   useTheme,
   alpha,
   Chip,
+  Breadcrumbs,
+  Link,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -28,6 +30,8 @@ import {
   Brightness7 as LightModeIcon,
   ExitToApp as LogoutIcon,
   Assessment as AuditIcon,
+  NavigateNext as NavigateNextIcon,
+  Home as HomeIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -78,6 +82,44 @@ const Layout = ({ children, onToggleTheme, mode }) => {
     { text: t('navigation.audit'), icon: <AuditIcon />, path: '/auditoria' },
     { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/configuracion' },
   ];
+
+  const breadcrumbs = useMemo(() => {
+    const pathnames = location.pathname.split('/').filter((x) => x);
+    
+    const routes = {
+      '': { label: t('navigation.dashboard'), icon: <HomeIcon sx={{ fontSize: 20 }} /> },
+      'casos': { label: t('navigation.cases'), icon: <GavelIcon sx={{ fontSize: 20 }} /> },
+      'documentos': { label: t('navigation.documents'), icon: <DescriptionIcon sx={{ fontSize: 20 }} /> },
+      'usuarios': { label: t('navigation.users'), icon: <PeopleIcon sx={{ fontSize: 20 }} /> },
+      'auditoria': { label: t('navigation.audit'), icon: <AuditIcon sx={{ fontSize: 20 }} /> },
+      'configuracion': { label: t('navigation.settings'), icon: <SettingsIcon sx={{ fontSize: 20 }} /> },
+    };
+
+    const items = [
+      { 
+        label: routes[''].label, 
+        icon: routes[''].icon, 
+        path: '/', 
+        isHome: true 
+      }
+    ];
+
+    let currentPath = '';
+    pathnames.forEach((pathname) => {
+      currentPath += `/${pathname}`;
+      const route = routes[pathname];
+      if (route) {
+        items.push({
+          label: route.label,
+          icon: route.icon,
+          path: currentPath,
+          isHome: false
+        });
+      }
+    });
+
+    return items;
+  }, [location.pathname, t]);
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -305,6 +347,66 @@ const Layout = ({ children, onToggleTheme, mode }) => {
         }}
       >
         <Toolbar />
+        
+        {/* Breadcrumb Navigation */}
+        {breadcrumbs.length > 1 && (
+          <Box sx={{ mb: 3, mt: 1 }}>
+            <Breadcrumbs
+              separator={<NavigateNextIcon fontSize="small" />}
+              aria-label="breadcrumb"
+              sx={{
+                '& .MuiBreadcrumbs-separator': {
+                  ...(theme.direction === 'rtl' ? { transform: 'rotate(180deg)' } : {})
+                }
+              }}
+            >
+              {breadcrumbs.map((item, index) => {
+                const isLast = index === breadcrumbs.length - 1;
+                
+                return isLast ? (
+                  <Box
+                    key={item.path}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      color: 'text.primary',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {item.icon}
+                    <Typography color="text.primary" fontSize="0.875rem" fontWeight={600}>
+                      {item.label}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Link
+                    key={item.path}
+                    underline="hover"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      color: 'text.secondary',
+                      cursor: 'pointer',
+                      transition: 'color 0.2s',
+                      '&:hover': {
+                        color: 'primary.main',
+                      },
+                    }}
+                    onClick={() => navigate(item.path)}
+                  >
+                    {item.icon}
+                    <Typography fontSize="0.875rem">
+                      {item.label}
+                    </Typography>
+                  </Link>
+                );
+              })}
+            </Breadcrumbs>
+          </Box>
+        )}
+        
         {children}
       </Box>
     </Box>
