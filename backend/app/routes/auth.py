@@ -1,5 +1,5 @@
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 from typing import Optional
@@ -52,7 +52,7 @@ class UserResponse(BaseModel):
 
 @router.post("/login", response_model=TokenResponse)
 @ip_limiter.limit("5/minute")  # Max 5 login attempts per minute per IP
-async def login(request: Request, login_data: LoginRequest, db: Session = Depends(get_db)):
+async def login(request: Request, response: Response, login_data: LoginRequest, db: Session = Depends(get_db)):
     """Iniciar sesión con rate limiting (5 intentos/minuto por IP)"""
     user = db.query(User).filter(User.email == login_data.email).first()
     
@@ -110,7 +110,7 @@ async def login(request: Request, login_data: LoginRequest, db: Session = Depend
 
 @router.post("/register", response_model=TokenResponse)
 @ip_limiter.limit("3/hour")  # Max 3 registrations per hour per IP
-async def register(request: Request, register_data: RegisterRequest, db: Session = Depends(get_db)):
+async def register(request: Request, response: Response, register_data: RegisterRequest, db: Session = Depends(get_db)):
     """Registrar nuevo usuario con rate limiting (3 registros/hora por IP)"""
     # Check if user already exists
     existing_user = db.query(User).filter(User.email == register_data.email).first()
@@ -320,6 +320,7 @@ async def disable_2fa(
 @ip_limiter.limit("5/minute")
 async def login_with_2fa(
     request: Request,
+    response: Response,
     login_data: LoginWith2FARequest,
     db: Session = Depends(get_db)
 ):
@@ -400,6 +401,7 @@ async def login_with_2fa(
 @ip_limiter.limit("3/hour")
 async def request_password_reset(
     request: Request,
+    response: Response,
     reset_data: PasswordResetRequest,
     db: Session = Depends(get_db)
 ):
