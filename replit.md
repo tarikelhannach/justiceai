@@ -24,6 +24,21 @@ The MVP is now functional with:
 
 ## Recent Changes (October 13, 2025)
 
+### RTL (Right-to-Left) Fixes ✅
+- **Layout RTL Support**: Fixed sidebar and AppBar positioning for Arabic
+  - Drawer anchor changes from 'left' to 'right' in RTL mode
+  - AppBar margins adjust automatically (ml ↔ mr based on direction)
+  - Border positions flip correctly (borderRight ↔ borderLeft)
+  - Avatar and icon spacing adapts to RTL layout
+- **Direction Management**: Centralized in App.jsx via useEffect
+  - Single source of truth for document.dir and lang attributes
+  - LanguageSelector only handles i18n language switching
+  - Theme direction prop updates automatically based on selected language
+- **Complete RTL Coverage**: All UI components properly mirror in Arabic
+  - Sidebar navigation flows right-to-left
+  - Content area positions correctly with RTL drawer
+  - Icons, buttons, and spacing all RTL-compatible
+
 ### Backend Implementation ✅
 - **Database Setup**: PostgreSQL with SQLAlchemy ORM
 - **Authentication**: JWT-based auth with password hashing (bcrypt)
