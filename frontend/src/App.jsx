@@ -5,7 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { createAppTheme } from './theme';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
-import AdminDashboard from './components/AdminDashboard';
+import RoleDashboard from './components/RoleDashboard';
 import Login from './components/Login';
 import { CircularProgress, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -71,7 +71,7 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
-                <AdminDashboard />
+                <RoleDashboard />
               </Layout>
             </ProtectedRoute>
           }

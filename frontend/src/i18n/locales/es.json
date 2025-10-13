@@ -15,7 +15,8 @@
     "close": "Cerrar",
     "yes": "Sí",
     "no": "No",
-    "user": "Usuario"
+    "user": "Usuario",
+    "actions": "Acciones"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -72,7 +73,30 @@
     "active": "activos",
     "completed": "completados",
     "archived": "archivados",
-    "notAssigned": "Sin asignar"
+    "notAssigned": "Sin asignar",
+    "judge": {
+      "title": "Panel de Juez",
+      "subtitle": "Gestione sus casos asignados",
+      "totalAssigned": "Total Asignados",
+      "assignedCases": "Casos Asignados",
+      "noCases": "No hay casos asignados"
+    },
+    "lawyer": {
+      "title": "Panel de Abogado",
+      "subtitle": "Gestione sus casos",
+      "totalCases": "Total de Casos",
+      "activeCases": "Casos Activos",
+      "myCases": "Mis Casos",
+      "noCases": "No hay casos registrados"
+    },
+    "citizen": {
+      "title": "Mis Casos",
+      "subtitle": "Consulte el estado de sus casos",
+      "totalCases": "Total de Casos",
+      "activeCases": "Casos Activos",
+      "caseProgress": "Progreso del Caso",
+      "noCases": "No hay casos registrados"
+    }
   },
   "status": {
     "pending": "Pendiente",
@@ -115,5 +139,23 @@
   "branding": {
     "appName": "Justicia Digital",
     "country": "Reino de Marruecos"
+  },
+  "cases": {
+    "caseNumber": "N° de Caso",
+    "title": "Título",
+    "description": "Descripción",
+    "owner": "Propietario",
+    "assignedJudge": "Juez Asignado",
+    "notAssigned": "No asignado",
+    "createdAt": "Fecha de Creación",
+    "changeStatus": "Cambiar Estado",
+    "status": {
+      "title": "Estado",
+      "pending": "Pendiente",
+      "inProgress": "En Progreso",
+      "underReview": "En Revisión",
+      "resolved": "Resuelto",
+      "closed": "Cerrado"
+    }
   }
 }
