@@ -114,10 +114,11 @@ async def get_metrics():
     }
 
 # Include routers
-from .routes import auth, cases
+from .routes import auth, cases, documents
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(cases.router, prefix="/api")
+app.include_router(documents.router)
 
 # Global exception handler
 @app.exception_handler(Exception)

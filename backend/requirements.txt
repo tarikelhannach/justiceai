@@ -37,6 +37,9 @@ pypdf2==3.0.1
 python-magic==0.4.27
 filetype==1.2.0
 
+# Replit Object Storage
+replit-object-storage==1.0.2
+
 # ML & NLP for Arabic/French/Spanish
 sentence-transformers==2.2.2
 torch==2.0.1
