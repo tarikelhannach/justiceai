@@ -2,7 +2,6 @@
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
@@ -51,19 +50,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configurado para Marruecos
-allowed_origins = settings.allowed_origins.split(",")
+# CORS configurado para Marruecos - Allow all origins in development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"] if settings.debug else settings.allowed_origins.split(","),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
-
-# Security middleware
-allowed_hosts = settings.allowed_hosts.split(",")
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
 
 # Health check endpoint
 @app.get("/health", tags=["🏥 Health"])
@@ -140,8 +134,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", 8000)),
+        "app.main:app",
+        host="localhost",
+        port=int(os.getenv("BACKEND_PORT", 8000)),
         reload=settings.debug
     )
