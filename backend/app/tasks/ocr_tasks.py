@@ -13,54 +13,58 @@ def process_document_ocr(self, document_id: int):
     """
     Process OCR for uploaded document.
     Runs on CPU-intensive queue for text extraction.
+    Uses shared SessionLocal from app.database for proper connection pooling.
     """
     try:
-        from app.database import get_db
+        from app.database import SessionLocal
         from app.models import Document as DocumentModel
         
         logger.info(f"Starting OCR processing for document {document_id}")
         
-        db = next(get_db())
-        document = db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
-        
-        if not document:
-            logger.error(f"Document {document_id} not found in database")
-            raise ValueError(f"Document {document_id} not found")
-        
-        import importlib.util
-        spec = importlib.util.spec_from_file_location(
-            "ocr_module", 
-            "/home/runner/workspace/backend/app/backend-app-ocr-processor.py"
-        )
-        ocr_module = importlib.util.module_from_spec(spec)
-        
-        import app.config
-        sys.modules['ocr_module.config'] = app.config
-        spec.loader.exec_module(ocr_module)
-        
-        ocr_processor = ocr_module.MoroccoOCRProcessor()
-        result = ocr_processor.process_document(document.file_path)
-        
-        document.ocr_processed = True
-        document.ocr_text = result.get('extracted_text', '')
-        document.is_searchable = True
-        
-        if 'ocr_confidence' in result:
-            document.ocr_confidence = result['ocr_confidence']
-        if 'detected_language' in result:
-            document.ocr_language = result['detected_language']
-        
-        db.commit()
-        
-        logger.info(f"OCR processing completed for document {document_id}")
-        
-        return {
-            'document_id': document_id,
-            'text': result.get('extracted_text', ''),
-            'language': result.get('detected_language', 'unknown'),
-            'confidence': result.get('ocr_confidence', 0),
-            'case_id': document.case_id
-        }
+        with SessionLocal() as db:
+            document = db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
+            
+            if not document:
+                logger.error(f"Document {document_id} not found in database")
+                raise ValueError(f"Document {document_id} not found")
+            
+            file_path = document.file_path
+            case_id = document.case_id
+            
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                "ocr_module", 
+                "/home/runner/workspace/backend/app/backend-app-ocr-processor.py"
+            )
+            ocr_module = importlib.util.module_from_spec(spec)
+            
+            import app.config
+            sys.modules['ocr_module.config'] = app.config
+            spec.loader.exec_module(ocr_module)
+            
+            ocr_processor = ocr_module.MoroccoOCRProcessor()
+            result = ocr_processor.process_document(file_path)
+            
+            document.ocr_processed = True
+            document.ocr_text = result.get('extracted_text', '')
+            document.is_searchable = True
+            
+            if 'ocr_confidence' in result:
+                document.ocr_confidence = result['ocr_confidence']
+            if 'detected_language' in result:
+                document.ocr_language = result['detected_language']
+            
+            db.commit()
+            
+            logger.info(f"OCR processing completed for document {document_id}")
+            
+            return {
+                'document_id': document_id,
+                'text': result.get('extracted_text', ''),
+                'language': result.get('detected_language', 'unknown'),
+                'confidence': result.get('ocr_confidence', 0),
+                'case_id': case_id
+            }
         
     except Exception as exc:
         logger.error(f"OCR processing failed for document {document_id}: {str(exc)}")
@@ -71,11 +75,23 @@ def process_document_ocr(self, document_id: int):
             raise
 
 @shared_task(name='app.tasks.ocr_tasks.index_document_elasticsearch')
-def index_document_elasticsearch(ocr_result: dict):
+def index_document_elasticsearch(ocr_results):
     """
     Index document in Elasticsearch AFTER OCR completes.
     Runs on IO-bound queue for network operations.
+    Uses shared SessionLocal from app.database for proper connection pooling.
+    
+    Args:
+        ocr_results: Either a list of OCR results from chord, or a single dict from chain
     """
+    if isinstance(ocr_results, list):
+        if not ocr_results:
+            logger.error("Received empty results list")
+            return {'success': False, 'error': 'No OCR results'}
+        ocr_result = ocr_results[0]
+    else:
+        ocr_result = ocr_results
+    
     document_id = ocr_result.get('document_id')
     
     try:
@@ -106,12 +122,15 @@ def index_document_elasticsearch(ocr_result: dict):
         
         logger.info(f"Document {document_id} successfully indexed in Elasticsearch")
         
-        from app.database import get_db
+        from app.database import SessionLocal
         from app.models import Document as DocumentModel
         
-        db = next(get_db())
-        document = db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
-        if document:
+        with SessionLocal() as db:
+            document = db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
+            if not document:
+                logger.error(f"Document {document_id} not found after indexing")
+                raise ValueError(f"Document {document_id} disappeared during indexing")
+            
             document.is_searchable = True
             db.commit()
         
