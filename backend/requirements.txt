@@ -4,7 +4,7 @@ uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 
 # Database & ORM
-sqlalchemy==2.0.23
+sqlalchemy==2.0.44
 psycopg2-binary==2.9.9
 alembic==1.12.1
 asyncpg==0.28.0
@@ -19,10 +19,9 @@ elasticsearch==8.11.0
 elasticsearch-dsl==8.11.0
 
 # Authentication & Security
-python-jose[cryptography]==3.3.0
+python-jose[cryptography]==3.5.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
-cryptography==41.0.7
+cryptography==46.0.2
 pyopenssl==23.3.0
 slowapi==0.1.9
 pyotp==2.9.0
@@ -30,7 +29,7 @@ qrcode[pil]==7.4.2
 
 # OCR & Image Processing
 pytesseract==0.3.10
-pillow==10.1.0
+pillow==11.3.0
 opencv-python==4.8.1.78
 numpy==1.24.4
 pdf2image==1.16.3
@@ -43,10 +42,10 @@ filetype==1.2.0
 # Replit Object Storage
 replit-object-storage==1.0.2
 
-# ML & NLP for Arabic/French/Spanish
-sentence-transformers==2.2.2
-torch==2.0.1
-transformers==4.35.0
+# ML & NLP for Arabic/French/Spanish (Currently not used - install if semantic search is needed)
+# sentence-transformers==2.2.2
+# torch==2.0.1
+# transformers==4.35.0
 langdetect==1.0.9
 
 # HSM Integration
@@ -63,7 +62,7 @@ azure-core==1.29.0
 # HTTP & Networking
 requests==2.31.0
 httpx==0.25.2
-aiohttp==3.8.6
+# aiohttp==3.8.6  # Not currently used - install if async HTTP client is needed
 
 # Utilities & Configuration
 python-dotenv==1.0.0
@@ -76,7 +75,7 @@ pytz==2023.3
 python-dateutil==2.8.2
 
 # JSON & Serialization
-orjson==3.9.10
+# orjson==3.9.10  # Not currently used - FastAPI uses standard JSON
 msgpack==1.0.7
 
 # Monitoring & Logging
@@ -111,8 +110,8 @@ arabic-reshaper==3.0.0
 babel==2.13.1
 phonenumbers==8.13.25
 
-# Production WSGI/ASGI
-gunicorn==21.2.0
+# Production WSGI/ASGI (Currently using uvicorn)
+# gunicorn==21.2.0  # Not currently used - uvicorn is the ASGI server
 gevent==23.9.1
 
 # Image optimization for Morocco government docs
