@@ -19,6 +19,8 @@ The MVP is now functional with:
 - ✅ PostgreSQL database with User, Case, Document, AuditLog models
 - ✅ Demo data populated (4 users, 3 cases)
 - ✅ Protected routes and authorization
+- ✅ Multi-language support (Spanish, French, Arabic) with RTL support
+- ✅ Document upload/download with RBAC validation
 
 ## Recent Changes (October 13, 2025)
 
@@ -81,14 +83,21 @@ Access the system with these credentials:
 - **UI Library**: Material-UI (MUI) v5
 - **Routing**: React Router v6
 - **HTTP Client**: Axios
+- **Internationalization**: react-i18next with ES/FR/AR support
 - **Port**: 5000 (required for Replit)
 - **Host**: 0.0.0.0 (allows Replit proxy)
 - **Components**: 
-  - `Login.jsx`: Modern login/register form
-  - `Layout.jsx`: Sidebar navigation with user info
-  - `AdminDashboard.jsx`: Main dashboard with stats
+  - `Login.jsx`: Modern login/register form (translated)
+  - `Layout.jsx`: Sidebar navigation with user info and language selector
+  - `AdminDashboard.jsx`: Main dashboard with stats (translated)
+  - `DocumentUpload.jsx`: Document upload dialog (translated)
+  - `LanguageSelector.jsx`: Language switcher with flags
   - `AuthContext`: Authentication state management
   - `api.js`: Axios API service
+- **i18n**:
+  - Configuration: `i18n/config.js`
+  - Translations: `i18n/locales/{es,fr,ar}.json`
+  - RTL support for Arabic via Material-UI theme
 
 ### Backend (backend/)
 - **Framework**: FastAPI
@@ -218,6 +227,9 @@ The project is configured for Autoscale deployment:
 - @emotion/styled
 - @mui/icons-material
 - axios
+- i18next
+- react-i18next
+- i18next-browser-languagedetector
 
 ## Next Steps for Full System
 
@@ -233,6 +245,14 @@ The project is configured for Autoscale deployment:
 3. ✅ Document upload component with drag-and-drop UI
 4. ✅ File download functionality with permissions
 5. ✅ Secure file management (50MB limit, type validation)
+
+### Phase 2.5 (Internationalization) ✅ COMPLETED
+1. ✅ Multi-language support (Spanish, French, Arabic)
+2. ✅ react-i18next integration with browser language detection
+3. ✅ Language selector with flags (ES 🇪🇸, FR 🇫🇷, AR 🇲🇦)
+4. ✅ RTL (Right-to-Left) support for Arabic
+5. ✅ Complete translations for all UI components
+6. ✅ Language persistence in localStorage
 
 ### Phase 3 (Advanced Features)
 1. OCR processing (Tesseract integration)
@@ -255,7 +275,9 @@ The project is configured for Autoscale deployment:
 4. Search limited to basic database queries
 
 ## User Preferences
-- **Language**: Spanish (ES) used for UI messages
+- **Languages**: Multi-language support (Spanish, French, Arabic)
 - **UI Framework**: Material-UI with modern design
 - **Theme**: Dark/Light mode with purple gradient
 - **Authentication**: JWT-based with localStorage persistence
+- **RTL Support**: Automatic RTL layout for Arabic language
+- **Language Persistence**: Selected language stored in localStorage
