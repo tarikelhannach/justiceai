@@ -75,14 +75,16 @@ const Layout = ({ children, onToggleTheme, mode }) => {
     setMobileOpen(!mobileOpen);
   };
 
-  const menuItems = [
-    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/' },
-    { text: t('navigation.cases'), icon: <GavelIcon />, path: '/casos' },
-    { text: t('navigation.documents'), icon: <DescriptionIcon />, path: '/documentos' },
-    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/usuarios' },
-    { text: t('navigation.audit'), icon: <AuditIcon />, path: '/auditoria' },
-    { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/configuracion' },
+  const allMenuItems = [
+    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
+    { text: t('navigation.cases'), icon: <GavelIcon />, path: '/casos', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
+    { text: t('navigation.documents'), icon: <DescriptionIcon />, path: '/documentos', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
+    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/usuarios', roles: ['admin', 'clerk'] },
+    { text: t('navigation.audit'), icon: <AuditIcon />, path: '/auditoria', roles: ['admin', 'clerk'] },
+    { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/configuracion', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
   ];
+
+  const menuItems = allMenuItems.filter(item => item.roles.includes(user?.role));
 
   const breadcrumbs = useMemo(() => {
     const pathnames = location.pathname.split('/').filter((x) => x);
