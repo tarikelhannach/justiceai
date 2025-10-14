@@ -141,6 +141,16 @@ export const getDesignTokens = (mode) => ({
     ...Array(19).fill('none'),
   ],
   components: {
+    // Global focus styles for WCAG 2.4.7 (AA) - Focus Visible
+    MuiCssBaseline: {
+      styleOverrides: {
+        '*:focus-visible': {
+          outline: `3px solid ${mode === 'light' ? '#7c3aed' : '#a78bfa'}`,
+          outlineOffset: '2px',
+          borderRadius: '4px',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
@@ -149,6 +159,10 @@ export const getDesignTokens = (mode) => ({
           boxShadow: 'none',
           '&:hover': {
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          },
+          '&:focus-visible': {
+            outline: `3px solid ${mode === 'light' ? '#7c3aed' : '#a78bfa'}`,
+            outlineOffset: '3px',
           },
         },
         contained: {
@@ -159,6 +173,27 @@ export const getDesignTokens = (mode) => ({
             background: mode === 'light'
               ? 'linear-gradient(135deg, #5568d3 0%, #63408d 100%)'
               : 'linear-gradient(135deg, #5568d3 0%, #63408d 100%)',
+          },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          '&:focus-visible': {
+            outline: `3px solid ${mode === 'light' ? '#7c3aed' : '#a78bfa'}`,
+            outlineOffset: '2px',
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root:focus-within': {
+            outline: `2px solid ${mode === 'light' ? '#7c3aed' : '#a78bfa'}`,
+            outlineOffset: '1px',
+            borderRadius: '8px',
           },
         },
       },

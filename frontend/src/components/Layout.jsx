@@ -37,6 +37,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
+import SkipNavigation from './SkipNavigation';
 
 const drawerWidth = 280;
 
@@ -253,6 +254,9 @@ const Layout = ({ children, onToggleTheme, mode }) => {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Skip Navigation for Accessibility */}
+      <SkipNavigation />
+      
       {/* AppBar */}
       <AppBar
         position="fixed"
@@ -337,13 +341,18 @@ const Layout = ({ children, onToggleTheme, mode }) => {
 
       {/* Contenido Principal */}
       <Box
+        id="main-content"
         component="main"
+        tabIndex={-1}
         sx={{
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           bgcolor: theme.palette.background.default,
           minHeight: '100vh',
+          '&:focus': {
+            outline: 'none',
+          },
         }}
       >
         <Toolbar />
