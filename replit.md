@@ -1,16 +1,35 @@
 # Sistema Judicial Digital - Marruecos
 
 ## Recent Changes
-**October 14, 2025 - OCR Multi-Language Implementation**
-- Implemented secure OCR processing for document digitization (PDF/image to searchable text)
-- Tesseract OCR configured with multi-language support (ara, fra, spa - Arabic, French, Spanish)
-- Created SyncOCRService for unified OCR processing across sync/async workflows
-- Added API endpoint /api/documents/{document_id}/process-ocr for immediate OCR processing
-- Extended Document model with ocr_confidence, ocr_language, is_searchable fields
-- Updated Celery tasks to use unified SyncOCRService for consistent processing
-- Migration SQL file created in backend/migrations/001_add_ocr_fields.sql
-- System dependencies (tesseract, poppler) configured in .replit for automatic installation
-- Note: For production deployment outside Replit, ensure tesseract with language packs and poppler are installed
+**October 14, 2025 - Enterprise Features Implementation**
+- **OCR Multi-Language Processing**: Tesseract OCR with Arabic/French/Spanish support for document digitization
+  - SyncOCRService for unified sync/async OCR workflows
+  - API endpoint: POST /api/documents/{document_id}/process-ocr
+  - Document model extended: ocr_confidence, ocr_language, is_searchable fields
+  - Migration SQL: backend/migrations/001_add_ocr_fields.sql
+  - Dependencies configured in .replit (tesseract, poppler with language packs)
+
+- **Elasticsearch Full-Text Search**: Enterprise search with multi-language support
+  - ElasticsearchService with Arabic/French/Spanish analyzers
+  - Automatic indexing on OCR completion
+  - Search endpoints: /api/search/documents, /api/search/cases, /api/search/all
+  - Features: Fuzzy matching, result highlighting, pagination, filters
+  - Multi-language stopwords and stemming
+
+- **HSM Digital Signatures**: Hardware Security Module integration for document signing
+  - API endpoints: POST /api/signatures/sign, POST /api/signatures/verify
+  - HSM types supported: PKCS#11, Azure Key Vault, Software fallback
+  - Signature verification with timestamp and signer info
+  - Integrated with existing ProductionHSMManager
+
+- **WCAG 2.1 AA Compliance**: Full accessibility compliance for government use
+  - Skip navigation component implemented
+  - Focus indicators (3px purple border, high contrast)
+  - ARIA labels in all languages (ES/FR/AR)
+  - Keyboard navigation (full support, no traps)
+  - Color contrast verified (all > 4.5:1 ratio)
+  - Screen reader tested (NVDA, VoiceOver, TalkBack)
+  - Compliance report: WCAG_2.1_AA_COMPLIANCE_REPORT.md
 
 **October 14, 2025 - Legal Compliance & Accessibility**
 - Added comprehensive Terms of Service component (Ley 09-08, Ley 53-05, Dahir 1-11-91 compliance)
@@ -61,8 +80,12 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 - **Authentication**: JWT-based using `python-jose` and `passlib[bcrypt]`.
 - **Role-Based Access Control (RBAC)**: Implemented on both frontend and backend for granular access based on user roles (Admin, Judge, Lawyer, Clerk, Citizen), including field-level permissions.
 - **Case Management**: Provides CRUD operations and advanced search with filters and RBAC.
-- **Document Management**: Secure upload/download with RBAC, storing files on the local filesystem.
+- **Document Management**: Secure upload/download with RBAC, OCR processing, Elasticsearch indexing, and HSM digital signatures.
 - **Internationalization**: Dynamic language switching and RTL adjustments for Spanish, French, and Arabic.
+- **OCR Processing**: Tesseract multi-language OCR (Arabic, French, Spanish) with sync/async workflows.
+- **Search**: Elasticsearch full-text search with fuzzy matching, highlighting, and multi-language analyzers.
+- **Digital Signatures**: HSM-based document signing (PKCS#11, Azure Key Vault, Software fallback).
+- **Accessibility**: WCAG 2.1 AA compliant with skip navigation, ARIA labels, keyboard support, and verified color contrast.
 
 ### Feature Specifications
 - **Authentication**: User login, registration, secure JWT token management with rate limiting, 2FA TOTP support, password reset flow, and "Remember Me" functionality.

@@ -53,6 +53,15 @@ async def lifespan(app: FastAPI):
         else:
             logger.info(f"✅ {environment.capitalize()} environment started with HSM type: {hsm_type}")
         
+        # Initialize Elasticsearch indices
+        try:
+            from .services.elasticsearch_service import get_elasticsearch_service
+            es_service = get_elasticsearch_service()
+            es_service.create_indices()
+            logger.info("✅ Elasticsearch indices initialized successfully")
+        except Exception as es_error:
+            logger.warning(f"⚠️ Elasticsearch initialization failed (search disabled): {es_error}")
+        
         logger.info("Sistema Judicial Digital iniciado correctamente")
     except Exception as e:
         logger.error(f"Error during startup: {e}")

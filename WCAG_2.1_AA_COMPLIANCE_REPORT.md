@@ -296,6 +296,22 @@ The Moroccan Judicial Digital System has been audited for WCAG 2.1 AA compliance
 
 ---
 
+## Production Deployment Notes
+
+### Elasticsearch Search Service
+- **Development**: Elasticsearch is optional (gracefully degrades with warning logs)
+- **Production**: Deploy Elasticsearch cluster for full-text search functionality
+  - Configure `ELASTICSEARCH_URL` environment variable
+  - Indices auto-create on startup via `create_indices()`
+  - Multi-language analyzers (Arabic, French, Spanish) configured
+  - Search endpoints: `/api/search/documents`, `/api/search/cases`, `/api/search/all`
+
+### HSM Digital Signatures
+- **Development**: Software HSM fallback enabled for testing
+- **Production**: Configure PKCS#11 or Azure Key Vault
+  - Set `HSM_TYPE` to `pkcs11` or `azure_keyvault`
+  - Software HSM blocked in production (startup validation)
+
 ## Recommendations for Ongoing Compliance
 
 1. **Regular Audits**: Conduct WCAG audits quarterly
