@@ -14,10 +14,12 @@ def process_document_ocr(self, document_id: int):
     Process OCR for uploaded document.
     Runs on CPU-intensive queue for text extraction.
     Uses shared SessionLocal from app.database for proper connection pooling.
+    Now uses SyncOCRService for consistent multi-language processing.
     """
     try:
         from app.database import SessionLocal
         from app.models import Document as DocumentModel
+        from app.services.ocr_service import SyncOCRService
         
         logger.info(f"Starting OCR processing for document {document_id}")
         
@@ -31,28 +33,14 @@ def process_document_ocr(self, document_id: int):
             file_path = document.file_path
             case_id = document.case_id
             
-            import importlib.util
-            spec = importlib.util.spec_from_file_location(
-                "ocr_module", 
-                "/home/runner/workspace/backend/app/backend-app-ocr-processor.py"
-            )
-            ocr_module = importlib.util.module_from_spec(spec)
-            
-            import app.config
-            sys.modules['ocr_module.config'] = app.config
-            spec.loader.exec_module(ocr_module)
-            
-            ocr_processor = ocr_module.MoroccoOCRProcessor()
-            result = ocr_processor.process_document(file_path)
+            ocr_service = SyncOCRService()
+            result = ocr_service.process_document(file_path)
             
             document.ocr_processed = True
             document.ocr_text = result.get('extracted_text', '')
+            document.ocr_confidence = result.get('ocr_confidence', 0)
+            document.ocr_language = result.get('detected_language', 'es')
             document.is_searchable = True
-            
-            if 'ocr_confidence' in result:
-                document.ocr_confidence = result['ocr_confidence']
-            if 'detected_language' in result:
-                document.ocr_language = result['detected_language']
             
             db.commit()
             

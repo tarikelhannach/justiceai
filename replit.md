@@ -1,6 +1,17 @@
 # Sistema Judicial Digital - Marruecos
 
 ## Recent Changes
+**October 14, 2025 - OCR Multi-Language Implementation**
+- Implemented secure OCR processing for document digitization (PDF/image to searchable text)
+- Tesseract OCR configured with multi-language support (ara, fra, spa - Arabic, French, Spanish)
+- Created SyncOCRService for unified OCR processing across sync/async workflows
+- Added API endpoint /api/documents/{document_id}/process-ocr for immediate OCR processing
+- Extended Document model with ocr_confidence, ocr_language, is_searchable fields
+- Updated Celery tasks to use unified SyncOCRService for consistent processing
+- Migration SQL file created in backend/migrations/001_add_ocr_fields.sql
+- System dependencies (tesseract, poppler) configured in .replit for automatic installation
+- Note: For production deployment outside Replit, ensure tesseract with language packs and poppler are installed
+
 **October 14, 2025 - Legal Compliance & Accessibility**
 - Added comprehensive Terms of Service component (Ley 09-08, Ley 53-05, Dahir 1-11-91 compliance)
 - Added Privacy Policy component (CNDP compliant, data protection, user rights)

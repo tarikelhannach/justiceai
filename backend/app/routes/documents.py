@@ -303,3 +303,68 @@ async def delete_document(
             status_code=500,
             detail=f"Error al eliminar documento: {str(e)}"
         )
+
+@router.post("/{document_id}/process-ocr")
+async def process_document_ocr_sync(
+    document_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Procesar OCR para un documento de forma síncrona.
+    Endpoint útil para testing y procesamiento inmediato de documentos pequeños.
+    """
+    from app.services.ocr_service import SyncOCRService
+    
+    document = db.query(DocumentModel).filter(DocumentModel.id == document_id).first()
+    
+    if not document:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    
+    if document.case_id:
+        case = db.query(Case).filter(Case.id == document.case_id).first()
+        if current_user.role.value not in ["admin", "clerk"]:
+            if current_user.role.value == "judge":
+                if case.assigned_judge_id != current_user.id:
+                    raise HTTPException(status_code=403, detail="No autorizado")
+            elif case.owner_id != current_user.id:
+                raise HTTPException(status_code=403, detail="No autorizado")
+    elif document.uploaded_by != current_user.id and current_user.role.value not in ["admin", "clerk"]:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    
+    if document.ocr_processed:
+        return {
+            "message": "Documento ya procesado con OCR",
+            "ocr_text": document.ocr_text,
+            "ocr_confidence": document.ocr_confidence,
+            "ocr_language": document.ocr_language
+        }
+    
+    try:
+        ocr_service = SyncOCRService()
+        result = ocr_service.process_document(document.file_path)
+        
+        document.ocr_processed = True
+        document.ocr_text = result['extracted_text']
+        document.ocr_confidence = result['ocr_confidence']
+        document.ocr_language = result['detected_language']
+        document.is_searchable = True
+        
+        db.commit()
+        db.refresh(document)
+        
+        return {
+            "message": "OCR procesado exitosamente",
+            "ocr_text": result['extracted_text'],
+            "ocr_confidence": result['ocr_confidence'],
+            "ocr_language": result['detected_language'],
+            "processing_time": result['processing_time'],
+            "pages_processed": result['pages_processed']
+        }
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al procesar OCR: {str(e)}"
+        )
