@@ -41,7 +41,7 @@ const SkipNavigation = () => {
         }
       }}
     >
-      {t('accessibility.skipToMainContent', 'Saltar al contenido principal')}
+      {t('a11y.skipToMainContent')}
     </Link>
   );
 };

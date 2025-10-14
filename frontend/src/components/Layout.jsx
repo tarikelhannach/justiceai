@@ -274,7 +274,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
+            aria-label={mobileOpen ? t('a11y.closeMenu') : t('a11y.openMenu')}
             edge="start"
             onClick={handleDrawerToggle}
             sx={{ 
@@ -288,9 +288,14 @@ const Layout = ({ children, onToggleTheme, mode }) => {
             {t('branding.appName')}
           </Typography>
           <LanguageSelector />
-          <IconButton onClick={onToggleTheme} color="inherit" sx={{ 
-            ...(isRtl ? { mr: 1 } : { ml: 1 })
-          }}>
+          <IconButton 
+            onClick={onToggleTheme} 
+            color="inherit" 
+            aria-label={t('a11y.toggleTheme')}
+            sx={{ 
+              ...(isRtl ? { mr: 1 } : { ml: 1 })
+            }}
+          >
             {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Toolbar>

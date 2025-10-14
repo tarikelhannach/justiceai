@@ -228,5 +228,17 @@
     "actions": "Acciones",
     "all": "Todos",
     "rowsPerPage": "Filas por página"
+  },
+  "a11y": {
+    "skipToMainContent": "Saltar al contenido principal",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "toggleTheme": "Cambiar tema",
+    "changeLanguage": "Cambiar idioma",
+    "userMenu": "Menú de usuario",
+    "searchBar": "Barra de búsqueda",
+    "mainNavigation": "Navegación principal",
+    "notifications": "Notificaciones",
+    "settings": "Configuración"
   }
 }

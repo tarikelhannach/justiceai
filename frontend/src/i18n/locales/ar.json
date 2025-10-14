@@ -228,5 +228,17 @@
     "actions": "الإجراءات",
     "all": "الكل",
     "rowsPerPage": "صفوف لكل صفحة"
+  },
+  "a11y": {
+    "skipToMainContent": "انتقل إلى المحتوى الرئيسي",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "toggleTheme": "تغيير السمة",
+    "changeLanguage": "تغيير اللغة",
+    "userMenu": "قائمة المستخدم",
+    "searchBar": "شريط البحث",
+    "mainNavigation": "التنقل الرئيسي",
+    "notifications": "الإشعارات",
+    "settings": "الإعدادات"
   }
 }
