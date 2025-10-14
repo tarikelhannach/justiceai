@@ -35,6 +35,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
+import TermsOfService from './TermsOfService';
+import PrivacyPolicy from './PrivacyPolicy';
 import { authAPI } from '../services/api';
 
 const Login = () => {
@@ -58,6 +60,7 @@ const Login = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    acceptedTerms: false,
   });
 
   const [requires2FA, setRequires2FA] = useState(false);
@@ -66,6 +69,8 @@ const Login = () => {
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [resetStep, setResetStep] = useState('request');
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -102,7 +107,8 @@ const Login = () => {
   };
 
   const handleRegisterChange = (e) => {
-    setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setRegisterForm({ ...registerForm, [e.target.name]: value });
     setError('');
     setSuccess('');
   };
@@ -467,12 +473,57 @@ const Login = () => {
                 }}
               />
 
+              {/* Terms and Privacy Consent */}
+              <Box sx={{ mt: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="acceptedTerms"
+                      checked={registerForm.acceptedTerms}
+                      onChange={handleRegisterChange}
+                      color="primary"
+                      required
+                    />
+                  }
+                  label={
+                    <Typography variant="body2">
+                      {t('auth.acceptTerms1', 'Acepto los')}{' '}
+                      <MuiLink
+                        component="button"
+                        type="button"
+                        variant="body2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowTerms(true);
+                        }}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {t('auth.termsOfService', 'Términos y Condiciones')}
+                      </MuiLink>
+                      {' '}{t('auth.and', 'y la')}{' '}
+                      <MuiLink
+                        component="button"
+                        type="button"
+                        variant="body2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowPrivacy(true);
+                        }}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {t('auth.privacyPolicy', 'Política de Privacidad')}
+                      </MuiLink>
+                    </Typography>
+                  }
+                />
+              </Box>
+
               <Button
                 fullWidth
                 type="submit"
                 variant="contained"
                 size="large"
-                disabled={loading}
+                disabled={loading || !registerForm.acceptedTerms}
                 sx={{
                   mt: 3,
                   mb: 2,
@@ -566,6 +617,22 @@ const Login = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Terms of Service Dialog */}
+      <TermsOfService 
+        open={showTerms} 
+        onClose={() => setShowTerms(false)}
+        onAccept={() => {
+          setRegisterForm({ ...registerForm, acceptedTerms: true });
+          setShowTerms(false);
+        }}
+      />
+
+      {/* Privacy Policy Dialog */}
+      <PrivacyPolicy 
+        open={showPrivacy} 
+        onClose={() => setShowPrivacy(false)}
+      />
     </Box>
   );
 };
