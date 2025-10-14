@@ -341,6 +341,8 @@ async def process_document_ocr_sync(
         }
     
     try:
+        from app.services.elasticsearch_service import get_elasticsearch_service
+        
         ocr_service = SyncOCRService()
         result = ocr_service.process_document(document.file_path)
         
@@ -352,6 +354,23 @@ async def process_document_ocr_sync(
         
         db.commit()
         db.refresh(document)
+        
+        # Indexar en Elasticsearch
+        try:
+            es_service = get_elasticsearch_service()
+            es_service.index_document({
+                'document_id': document.id,
+                'filename': document.filename,
+                'ocr_text': document.ocr_text,
+                'ocr_language': document.ocr_language,
+                'ocr_confidence': document.ocr_confidence,
+                'case_id': document.case_id,
+                'uploaded_by': document.uploaded_by,
+                'is_searchable': True
+            })
+        except Exception as es_error:
+            # No fallar si Elasticsearch no está disponible
+            pass
         
         return {
             "message": "OCR procesado exitosamente",
