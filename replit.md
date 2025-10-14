@@ -1,6 +1,15 @@
 # Sistema Judicial Digital - Marruecos
 
 ## Recent Changes
+**October 14, 2025 - Legal Compliance & Accessibility**
+- Added comprehensive Terms of Service component (Ley 09-08, Ley 53-05, Dahir 1-11-91 compliance)
+- Added Privacy Policy component (CNDP compliant, data protection, user rights)
+- Integrated legal consent checkbox in registration flow
+- Email notifications: System implemented but requires SMTP/email provider configuration
+  - Options: Resend (recommended), SendGrid, or custom SMTP
+  - Configuration: Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD secrets
+  - Templates ready in backend/app/services/notification_service.py
+
 **October 13, 2025 - Security Updates**
 - Updated security-critical dependencies in response to security scan:
   - `cryptography`: 41.0.7 → 46.0.2 (major security update)
@@ -82,10 +91,12 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 - **Caching**: `redis`
 
 ### Pending Integrations
-- **Email Service (Password Reset)**: Currently password reset tokens are generated but emails are not sent. To enable email sending, configure one of:
-  - Resend integration (connector:ccfg_resend_01K69QKYK789WN202XSE3QS17V)
-  - SendGrid integration (connector:ccfg_sendgrid_01K69QKAPBPJ4SWD8GQHGY03D5)
-  - Or provide SMTP credentials as secrets
+- **Email Service (Critical for Production)**: NotificationService implemented, requires configuration:
+  - **Recommended**: Resend integration for enterprise-grade email delivery
+  - **Alternative**: SendGrid integration
+  - **Manual Setup**: Add secrets: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM_EMAIL
+  - **Features Ready**: Password reset, case updates, document notifications, 2FA setup emails
+  - **Note**: User declined Resend integration - configure manually before production deployment
 
 ### Frontend
 - **Framework**: `react`, `react-dom`, `vite`
