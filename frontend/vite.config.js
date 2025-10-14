@@ -7,7 +7,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5000,
     strictPort: true,
-    allowedHosts: 'all',
+    allowedHosts: ['.replit.dev', '.repl.co', '.janeway.replit.dev'],
     hmr: {
       clientPort: 443,
       protocol: 'wss'
