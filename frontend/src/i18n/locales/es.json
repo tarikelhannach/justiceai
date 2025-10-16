@@ -53,10 +53,14 @@
     "passwordsNotMatch": "Las contraseñas no coinciden",
     "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
     "demoCredentials": "Credenciales de demostración",
-    "demoPasswordFormat": "[rol]123 (ej: admin123, juez123)"
+    "demoPasswordFormat": "[rol]123 (ej: admin123, juez123)",
+    "rememberMe": "Recuérdame",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "2faCode": "Código 2FA",
+    "2faHelper": "Ingresa el código de tu aplicación de autenticación"
   },
   "dashboard": {
-    "title": "Dashboard de Administración",
+    "title": "Panel de Administración",
     "subtitle": "Sistema Judicial Digital de Marruecos 🇲🇦",
     "systemStatus": "Sistema Operativo - Base de datos conectada",
     "totalCases": "Total de Casos",
@@ -72,7 +76,7 @@
     "uploadDocument": "Subir Documento",
     "manageUsers": "Gestionar Usuarios",
     "caseNumber": "Número",
-    "title": "Título",
+    "caseTitle": "Título",
     "owner": "Propietario",
     "assignedJudge": "Juez Asignado",
     "status": "Estado",
