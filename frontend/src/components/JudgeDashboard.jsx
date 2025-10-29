@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -13,7 +13,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -37,7 +36,7 @@ import { usePermissions } from '../hooks/usePermissions';
 const JudgeDashboard = () => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { user, canChangeCaseStatus } = usePermissions();
+  const { canChangeCaseStatus } = usePermissions();
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -54,11 +53,7 @@ const JudgeDashboard = () => {
     { value: 'closed', label: t('cases.status.closed'), color: 'default' },
   ];
 
-  useEffect(() => {
-    fetchCases();
-  }, []);
-
-  const fetchCases = async () => {
+  const fetchCases = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/cases/');
@@ -69,7 +64,11 @@ const JudgeDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchCases();
+  }, [fetchCases]);
 
   const handleOpenStatusDialog = (caseData) => {
     setSelectedCase(caseData);

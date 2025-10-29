@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Grid,
   Card,
   CardContent,
   Typography,
-  Button,
   Chip,
   Table,
   TableBody,
@@ -19,7 +18,6 @@ import {
   IconButton,
 } from '@mui/material';
 import {
-  Add as AddIcon,
   Description as DescriptionIcon,
   AttachFile as AttachFileIcon,
 } from '@mui/icons-material';
@@ -44,11 +42,7 @@ const LawyerDashboard = () => {
     { value: 'closed', label: t('cases.status.closed'), color: 'default' },
   ];
 
-  useEffect(() => {
-    fetchCases();
-  }, []);
-
-  const fetchCases = async () => {
+  const fetchCases = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/cases/');
@@ -59,7 +53,11 @@ const LawyerDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchCases();
+  }, [fetchCases]);
 
   const handleOpenUploadDialog = (caseData) => {
     setSelectedCase(caseData);

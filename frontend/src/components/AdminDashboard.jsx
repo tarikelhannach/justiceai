@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -11,7 +11,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Chip,
   Button,
   Alert,
@@ -25,7 +24,6 @@ import {
   Description as DescriptionIcon,
   Security as SecurityIcon,
   TrendingUp as TrendingUpIcon,
-  Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   HourglassEmpty as PendingIcon,
 } from '@mui/icons-material';
@@ -53,13 +51,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -78,7 +70,13 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchDashboardData]);
 
   const getStatusColor = (status) => {
     const colors = {

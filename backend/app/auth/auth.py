@@ -15,8 +15,9 @@ from ..models import User, UserRole
 
 logger = logging.getLogger(__name__)
 
-# Configuración de contraseñas
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Configuración de contraseñas: rondas altas por defecto, rondas bajas en testing
+_bcrypt_rounds = 12 if settings.environment == "production" else 8
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=_bcrypt_rounds)
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

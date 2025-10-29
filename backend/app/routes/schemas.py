@@ -1,6 +1,6 @@
 # backend/app/routes/schemas.py - Esquemas Pydantic para API
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, EmailStr
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -12,7 +12,7 @@ from ..models import UserRole, CaseStatus, CaseType, Priority, DocumentType, Sig
 # ========================================
 
 class UserBase(BaseModel):
-    email: str = Field(..., description="Email del usuario")
+    email: EmailStr = Field(..., description="Email del usuario")
     name: str = Field(..., min_length=2, max_length=255, description="Nombre completo")
     national_id: Optional[str] = Field(None, description="CIN marroquí")
     phone: Optional[str] = Field(None, description="Teléfono")

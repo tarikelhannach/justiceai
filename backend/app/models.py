@@ -22,6 +22,32 @@ class CaseStatus(enum.Enum):
     CLOSED = "closed"
     ARCHIVED = "archived"
 
+# Enums adicionales requeridos por los esquemas Pydantic
+class CaseType(enum.Enum):
+    CIVIL = "civil"
+    CRIMINAL = "criminal"
+    ADMINISTRATIVE = "administrative"
+    COMMERCIAL = "commercial"
+    FAMILY = "family"
+
+class Priority(enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+class DocumentType(enum.Enum):
+    EVIDENCE = "evidence"
+    RULING = "ruling"
+    MOTION = "motion"
+    BRIEF = "brief"
+    OTHER = "other"
+
+class SignatureStatus(enum.Enum):
+    PENDING = "pending"
+    SIGNED = "signed"
+    FAILED = "failed"
+
 class User(Base):
     __tablename__ = "users"
     

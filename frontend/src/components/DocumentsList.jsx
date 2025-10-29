@@ -46,12 +46,7 @@ const DocumentsList = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedCaseId, setSelectedCaseId] = useState('');
 
-  useEffect(() => {
-    fetchDocuments();
-    fetchCases();
-  }, []);
-
-  const fetchDocuments = async () => {
+  const fetchDocuments = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/documents/');
@@ -62,16 +57,21 @@ const DocumentsList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchCases = async () => {
+  const fetchCases = React.useCallback(async () => {
     try {
       const response = await api.get('/cases/');
       setCases(response.data);
     } catch (err) {
       console.error('Error fetching cases:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDocuments();
+    fetchCases();
+  }, [fetchDocuments, fetchCases]);
 
   const handleUpload = async () => {
     if (!selectedFile || !selectedCaseId) {

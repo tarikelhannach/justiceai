@@ -37,23 +37,8 @@ const SearchBar = ({ onSearchResults }) => {
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  // Debounce search
-  useEffect(() => {
-    if (searchQuery.length > 2) {
-      const timer = setTimeout(() => {
-        handleSearch();
-      }, 500);
-      return () => clearTimeout(timer);
-    } else if (searchQuery.length === 0) {
-      setSuggestions([]);
-      setAnchorEl(null);
-    }
-  }, [searchQuery]);
-
-  const handleSearch = async () => {
-    setLoading(true);
+  const handleSearch = React.useCallback(async () => {
     try {
       const params = new URLSearchParams();
       
@@ -75,10 +60,21 @@ const SearchBar = ({ onSearchResults }) => {
     } catch (error) {
       console.error('Error searching cases:', error);
       setSuggestions([]);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [searchQuery, filters, onSearchResults]);
+
+  // Debounce search
+  useEffect(() => {
+    if (searchQuery.length > 2) {
+      const timer = setTimeout(() => {
+        handleSearch();
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (searchQuery.length === 0) {
+      setSuggestions([]);
+      setAnchorEl(null);
+    }
+  }, [searchQuery, handleSearch]);
 
   const handleSelectCase = (caseItem) => {
     setSearchQuery('');

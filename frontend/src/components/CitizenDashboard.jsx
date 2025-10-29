@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -6,12 +6,6 @@ import {
   CardContent,
   Typography,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Alert,
   CircularProgress,
   useTheme,
@@ -43,11 +37,7 @@ const CitizenDashboard = () => {
 
   const statusSteps = ['pending', 'in_progress', 'under_review', 'resolved', 'closed'];
 
-  useEffect(() => {
-    fetchCases();
-  }, []);
-
-  const fetchCases = async () => {
+  const fetchCases = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/cases/');
@@ -58,7 +48,11 @@ const CitizenDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchCases();
+  }, [fetchCases]);
 
   const getStatusColor = (status) => {
     const statusObj = statuses.find(s => s.value === status);

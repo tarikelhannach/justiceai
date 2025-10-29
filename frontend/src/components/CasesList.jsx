@@ -59,12 +59,7 @@ const CasesList = () => {
     assigned_judge_id: null,
   });
 
-  useEffect(() => {
-    fetchCases();
-    fetchJudges();
-  }, []);
-
-  const fetchCases = async () => {
+  const fetchCases = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/cases/');
@@ -75,16 +70,21 @@ const CasesList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
-  const fetchJudges = async () => {
+  const fetchJudges = React.useCallback(async () => {
     try {
       const response = await api.get('/users/judges');
       setJudges(response.data || []);
     } catch (err) {
       console.error('Error fetching judges:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCases();
+    fetchJudges();
+  }, [fetchCases, fetchJudges]);
 
   const handleOpenDialog = (mode, caseItem = null) => {
     setDialogMode(mode);

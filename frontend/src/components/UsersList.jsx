@@ -55,13 +55,7 @@ const UsersList = () => {
   // Check if user has permission (only admin and clerk)
   const hasPermission = currentUser?.role === 'admin' || currentUser?.role === 'clerk';
 
-  useEffect(() => {
-    if (hasPermission) {
-      fetchUsers();
-    }
-  }, [hasPermission]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = React.useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get('/users/');
@@ -72,7 +66,13 @@ const UsersList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    if (hasPermission) {
+      fetchUsers();
+    }
+  }, [hasPermission, fetchUsers]);
 
   const handleOpenDialog = (mode, user = null) => {
     setDialogMode(mode);

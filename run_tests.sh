@@ -54,8 +54,8 @@ RATE_LIMIT_PER_MINUTE=1000
 RATE_LIMIT_PER_HOUR=10000
 EOF
 
-    # Set test environment
-    export $(cat .env.test | xargs)
+    # Set test environment (filter out comments)
+    export $(grep -v '^#' .env.test | grep -v '^$' | xargs)
     
     print_status "Entorno de testing configurado"
 }
