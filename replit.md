@@ -1,4 +1,4 @@
-# Sistema Judicial Digital - Marruecos
+# Digital Judicial System - Morocco
 
 ## Recent Changes
 **October 14, 2025 - Enterprise Features Implementation**

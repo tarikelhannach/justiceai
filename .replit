@@ -66,10 +66,6 @@ externalPort = 3002
 localPort = 41355
 externalPort = 3001
 
-[[ports]]
-localPort = 42879
-externalPort = 3003
-
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "cd backend && gunicorn app.main:app --bind 0.0.0.0:5000 --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 120 --access-logfile - --error-logfile -"]

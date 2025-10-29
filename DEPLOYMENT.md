@@ -1,182 +1,182 @@
-# Guía de Deployment - Sistema Judicial Digital Marruecos
+# Deployment Guide - Digital Judicial System Morocco
 
-## 📋 Tabla de Contenidos
+## 📋 Table of Contents
 
-1. [Requisitos Previos](#requisitos-previos)
-2. [Configuración Inicial](#configuración-inicial)
-3. [Deployment con Docker](#deployment-con-docker)
-4. [Configuración de Producción](#configuración-de-producción)
-5. [Monitoreo y Mantenimiento](#monitoreo-y-mantenimiento)
+1. [Prerequisites](#prerequisites)
+2. [Initial Configuration](#initial-configuration)
+3. [Docker Deployment](#docker-deployment)
+4. [Production Configuration](#production-configuration)
+5. [Monitoring and Maintenance](#monitoring-and-maintenance)
 6. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🔧 Requisitos Previos
+## 🔧 Prerequisites
 
-### Software Necesario
+### Required Software
 
-- **Docker**: versión 20.10 o superior
-- **Docker Compose**: versión 2.0 o superior
-- **Certificados SSL**: Para producción (Let's Encrypt recomendado)
-- **Servidor**: Mínimo 8GB RAM, 4 CPUs, 100GB almacenamiento
+- **Docker**: version 20.10 or higher
+- **Docker Compose**: version 2.0 or higher
+- **SSL Certificates**: For production (Let's Encrypt recommended)
+- **Server**: Minimum 8GB RAM, 4 CPUs, 100GB storage
 
-### Puertos Requeridos
+### Required Ports
 
-| Puerto | Servicio | Descripción |
+| Port | Service | Description |
 |--------|----------|-------------|
-| 80 | HTTP | Redirección a HTTPS |
-| 443 | HTTPS | Aplicación principal |
-| 5432 | PostgreSQL | Base de datos (interno) |
-| 6379 | Redis | Cache (interno) |
-| 9200 | Elasticsearch | Búsqueda (interno) |
-| 5555 | Flower | Monitoreo Celery |
-| 8081 | Redis Commander | Monitoreo Redis |
-| 9100 | ES Head | Monitoreo Elasticsearch |
-| 3000 | Grafana | Dashboard de métricas |
+| 80 | HTTP | Redirect to HTTPS |
+| 443 | HTTPS | Main application |
+| 5432 | PostgreSQL | Database (internal) |
+| 6379 | Redis | Cache (internal) |
+| 9200 | Elasticsearch | Search (internal) |
+| 5555 | Flower | Celery monitoring |
+| 8081 | Redis Commander | Redis monitoring |
+| 9100 | ES Head | Elasticsearch monitoring |
+| 3000 | Grafana | Metrics dashboard |
 
 ---
 
-## ⚙️ Configuración Inicial
+## ⚙️ Initial Configuration
 
-### 1. Clonar Repositorio
+### 1. Clone Repository
 
 ```bash
 git clone https://github.com/morocco-gov/sistema-judicial-digital.git
 cd sistema-judicial-digital
 ```
 
-### 2. Configurar Variables de Entorno
+### 2. Configure Environment Variables
 
 ```bash
-# Copiar ejemplo de configuración
+# Copy configuration example
 cp .env.example .env
 
-# Editar con valores de producción
+# Edit with production values
 nano .env
 ```
 
-**⚠️ IMPORTANTE:** El archivo `docker-compose.yml` está completamente parametrizado con variables de entorno. **NUNCA** contiene credenciales hardcodeadas. Todas las credenciales deben configurarse en el archivo `.env`.
+**⚠️ IMPORTANT:** The `docker-compose.yml` file is fully parameterized with environment variables. It **NEVER** contains hardcoded credentials. All credentials must be configured in the `.env` file.
 
-**Variables CRÍTICAS a cambiar en .env:**
+**CRITICAL variables to change in .env:**
 
 ```bash
-# Seguridad (OBLIGATORIO cambiar)
-SECRET_KEY="[generar-key-segura-32-caracteres-minimo]"
-POSTGRES_PASSWORD="[password-segura-base-datos]"
+# Security (MANDATORY to change)
+SECRET_KEY="[generate-secure-32-character-minimum-key]"
+POSTGRES_PASSWORD="[secure-database-password]"
 
-# Base de datos
+# Database
 DATABASE_URL="postgresql://justicia:${POSTGRES_PASSWORD}@db:5432/justicia_db"
 POSTGRES_DB=justicia_db
 POSTGRES_USER=justicia
 
-# Celery (Cache y Workers)
+# Celery (Cache and Workers)
 CELERY_BROKER_URL="redis://redis:6379/0"
 CELERY_RESULT_BACKEND="redis://redis:6379/0"
 
-# Dominios (actualizar con dominio real)
+# Domains (update with real domain)
 ALLOWED_ORIGINS="https://justicia.ma,https://www.justicia.ma"
 ALLOWED_HOSTS="justicia.ma,www.justicia.ma"
 
-# Entorno
+# Environment
 ENVIRONMENT=production
 DEBUG=false
 
-# HSM (Firma Digital) - Producción
-HSM_TYPE="pkcs11"  # o "azure_keyvault" o "software_fallback"
-# Para HSM hardware:
+# HSM (Digital Signature) - Production
+HSM_TYPE="pkcs11"  # or "azure_keyvault" or "software_fallback"
+# For hardware HSM:
 # HSM_LIBRARY_PATH="/usr/lib/hsm/libhsm.so"
-# HSM_PIN="[hsm-pin-seguro]"
+# HSM_PIN="[secure-hsm-pin]"
 ```
 
-### 3. Generar SECRET_KEY Segura
+### 3. Generate Secure SECRET_KEY
 
 ```bash
-# Método 1: Python
+# Method 1: Python
 python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 
-# Método 2: OpenSSL
+# Method 2: OpenSSL
 openssl rand -base64 32
 ```
 
 ---
 
-## 🐳 Deployment con Docker
+## 🐳 Docker Deployment
 
-### Deployment Development
+### Development Deployment
 
 ```bash
-# Ejecutar script de deployment
+# Run deployment script
 ./deploy.sh development
 
-# O manualmente
+# Or manually
 docker-compose up -d
 ```
 
-### Deployment Production
+### Production Deployment
 
 ```bash
-# 1. Verificar configuración
+# 1. Verify configuration
 ./deploy.sh check
 
-# 2. Generar certificados SSL (si no existen)
+# 2. Generate SSL certificates (if they don't exist)
 ./deploy.sh ssl
 
-# 3. Inicializar base de datos
+# 3. Initialize database
 ./deploy.sh init-db
 
-# 4. Deploy completo
+# 4. Complete deployment
 ./deploy.sh production
 
-# O manualmente con docker-compose
+# Or manually with docker-compose
 docker-compose -f docker-compose.yml up -d
 ```
 
-### Escalado Horizontal
+### Horizontal Scaling
 
-El sistema incluye 3 instancias de la aplicación (app1, app2, app3) balanceadas por Nginx:
+The system includes 3 application instances (app1, app2, app3) balanced by Nginx:
 
 ```yaml
-# Para agregar más instancias, editar docker-compose.yml
+# To add more instances, edit docker-compose.yml
 app4:
   build: ./backend
   environment:
     - SERVER_ID=app-4
-    # ... (copiar configuración de app1-3)
+    # ... (copy configuration from app1-3)
 ```
 
 ---
 
-## 🔐 Configuración de Producción
+## 🔐 Production Configuration
 
-### 1. Certificados SSL
+### 1. SSL Certificates
 
-#### Opción A: Let's Encrypt (Recomendado)
+#### Option A: Let's Encrypt (Recommended)
 
 ```bash
-# Instalar certbot
+# Install certbot
 apt-get install certbot
 
-# Generar certificados
+# Generate certificates
 certbot certonly --standalone -d justicia.ma -d www.justicia.ma
 
-# Copiar certificados
+# Copy certificates
 cp /etc/letsencrypt/live/justicia.ma/fullchain.pem ./ssl/justicia.crt
 cp /etc/letsencrypt/live/justicia.ma/privkey.pem ./ssl/justicia.key
 
-# Auto-renovación (crontab)
+# Auto-renewal (crontab)
 0 3 * * * certbot renew --quiet && docker-compose restart nginx
 ```
 
-#### Opción B: Certificados Propios
+#### Option B: Self-signed Certificates
 
 ```bash
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout ssl/justicia.key \
   -out ssl/justicia.crt \
-  -subj "/C=MA/ST=Rabat/L=Rabat/O=Gobierno de Marruecos/CN=justicia.ma"
+  -subj "/C=MA/ST=Rabat/L=Rabat/O=Government of Morocco/CN=justicia.ma"
 ```
 
-### 2. Firewall y Seguridad
+### 2. Firewall and Security
 
 ```bash
 # UFW (Ubuntu/Debian)
@@ -185,30 +185,30 @@ ufw allow 443/tcp
 ufw allow 22/tcp  # SSH
 ufw enable
 
-# Bloquear puertos internos (PostgreSQL, Redis, etc.)
-# Solo accesibles desde red Docker interna
+# Block internal ports (PostgreSQL, Redis, etc.)
+# Only accessible from Docker internal network
 ```
 
-### 3. HSM - Firma Digital
+### 3. HSM - Digital Signature
 
-#### Opción A: Hardware HSM (PKCS#11)
+#### Option A: Hardware HSM (PKCS#11)
 
 ```bash
-# Configurar en .env
+# Configure in .env
 HSM_TYPE=pkcs11
 HSM_LIBRARY_PATH=/usr/lib/hsm/libhsm.so
 HSM_PIN=your-secure-pin
 HSM_SLOT_ID=0
 
-# Montar volumen HSM en docker-compose.yml
+# Mount HSM volume in docker-compose.yml
 volumes:
-  - /dev/bus/usb:/dev/bus/usb  # Para HSM USB
+  - /dev/bus/usb:/dev/bus/usb  # For USB HSM
 ```
 
-#### Opción B: Azure Key Vault (Cloud HSM)
+#### Option B: Azure Key Vault (Cloud HSM)
 
 ```bash
-# Configurar en .env
+# Configure in .env
 HSM_TYPE=azure_keyvault
 AZURE_KEY_VAULT_URL=https://morocco-justicia-kv.vault.azure.net/
 AZURE_CLIENT_ID=your-client-id
@@ -216,59 +216,59 @@ AZURE_CLIENT_SECRET=your-client-secret
 AZURE_TENANT_ID=your-tenant-id
 ```
 
-### 4. Backups Automáticos
+### 4. Automated Backups
 
 ```bash
-# Configurar en .env
+# Configure in .env
 BACKUP_ENABLED=true
-BACKUP_SCHEDULE="0 2 * * *"  # 2 AM diario
+BACKUP_SCHEDULE="0 2 * * *"  # Daily at 2 AM
 BACKUP_RETENTION_DAYS=30
 
-# Ejecutar script de backup
+# Run backup script
 ./scripts/backup.sh
 ```
 
 ---
 
-## 📊 Monitoreo y Mantenimiento
+## 📊 Monitoring and Maintenance
 
-### Servicios de Monitoreo
+### Monitoring Services
 
-| Servicio | URL | Usuario | Password |
+| Service | URL | User | Password |
 |----------|-----|---------|----------|
-| Flower (Celery) | http://servidor:5555 | - | - |
-| Redis Commander | http://servidor:8081 | - | - |
-| Elasticsearch Head | http://servidor:9100 | - | - |
-| Grafana | http://servidor:3000 | admin | admin123 |
+| Flower (Celery) | http://server:5555 | - | - |
+| Redis Commander | http://server:8081 | - | - |
+| Elasticsearch Head | http://server:9100 | - | - |
+| Grafana | http://server:3000 | admin | admin123 |
 
-### Comandos Útiles
+### Useful Commands
 
 ```bash
-# Ver logs
+# View logs
 docker-compose logs -f app1
 docker-compose logs -f nginx
 docker-compose logs -f celery-cpu
 
-# Estado de servicios
+# Service status
 docker-compose ps
 
-# Reiniciar servicio específico
+# Restart specific service
 docker-compose restart app1
 
-# Ver salud de servicios
+# View service health
 ./deploy.sh health
 
-# Estadísticas de recursos
+# Resource statistics
 docker stats
 ```
 
 ### Health Checks
 
 ```bash
-# API principal
+# Main API
 curl https://justicia.ma/health
 
-# Base de datos
+# Database
 docker-compose exec db pg_isready -U justicia
 
 # Redis
@@ -282,112 +282,112 @@ curl http://localhost:9200/_health
 
 ## 🚨 Troubleshooting
 
-### Problema: Aplicación no inicia
+### Problem: Application won't start
 
 ```bash
-# Ver logs detallados
+# View detailed logs
 docker-compose logs app1 --tail=100
 
-# Verificar variables de entorno
+# Verify environment variables
 docker-compose exec app1 env | grep DATABASE_URL
 
-# Reiniciar contenedor
+# Restart container
 docker-compose restart app1
 ```
 
-### Problema: Base de datos no conecta
+### Problem: Database won't connect
 
 ```bash
-# Verificar estado de PostgreSQL
+# Verify PostgreSQL status
 docker-compose exec db pg_isready -U justicia -d justicia_db
 
-# Ver logs de DB
+# View DB logs
 docker-compose logs db --tail=50
 
-# Reiniciar DB
+# Restart DB
 docker-compose restart db
 ```
 
-### Problema: OCR no funciona (árabe)
+### Problem: OCR doesn't work (Arabic)
 
 ```bash
-# Verificar idiomas instalados
+# Verify installed languages
 docker-compose exec app1 tesseract --list-langs
 
-# Debería mostrar: ara, fra, spa
-# Si falta, reconstruir imagen
+# Should display: ara, fra, spa
+# If missing, rebuild image
 docker-compose build --no-cache app1
 ```
 
-### Problema: Certificados SSL expirados
+### Problem: SSL certificates expired
 
 ```bash
-# Renovar Let's Encrypt
+# Renew Let's Encrypt
 certbot renew
 
-# Copiar nuevos certificados
+# Copy new certificates
 cp /etc/letsencrypt/live/justicia.ma/*.pem ./ssl/
 
-# Reiniciar nginx
+# Restart nginx
 docker-compose restart nginx
 ```
 
-### Problema: Falta espacio en disco
+### Problem: Out of disk space
 
 ```bash
-# Limpiar imágenes no usadas
+# Clean unused images
 docker system prune -a
 
-# Limpiar logs antiguos
+# Clean old logs
 find ./logs -name "*.log" -mtime +30 -delete
 
-# Limpiar archivos temporales
+# Clean temporary files
 docker-compose exec app1 find /app/temp -type f -mtime +7 -delete
 ```
 
 ---
 
-## 🔄 Actualización del Sistema
+## 🔄 System Update
 
-### Actualización de Código
+### Code Update
 
 ```bash
-# 1. Backup antes de actualizar
+# 1. Backup before updating
 ./scripts/backup.sh
 
-# 2. Pull última versión
+# 2. Pull latest version
 git pull origin main
 
-# 3. Reconstruir imágenes
+# 3. Rebuild images
 docker-compose build --no-cache
 
-# 4. Reiniciar servicios (sin downtime)
+# 4. Restart services (without downtime)
 docker-compose up -d --force-recreate --no-deps app1
 docker-compose up -d --force-recreate --no-deps app2
 docker-compose up -d --force-recreate --no-deps app3
 ```
 
-### Actualización de Base de Datos
+### Database Update
 
 ```bash
-# 1. Backup de DB
+# 1. DB backup
 docker-compose exec db pg_dump -U justicia justicia_db > backup.sql
 
-# 2. Ejecutar migraciones
+# 2. Run migrations
 docker-compose exec app1 alembic upgrade head
 
-# 3. Verificar integridad
+# 3. Verify integrity
 docker-compose exec app1 python -m app.verify_db
 ```
 
 ---
 
-## 📈 Optimización de Performance
+## 📈 Performance Optimization
 
 ### PostgreSQL
 
 ```bash
-# Editar postgresql.conf para producción
+# Edit postgresql.conf for production
 shared_buffers = 2GB
 effective_cache_size = 6GB
 maintenance_work_mem = 512MB
@@ -397,7 +397,7 @@ max_connections = 200
 ### Redis
 
 ```bash
-# Configurar maxmemory adecuada
+# Configure appropriate maxmemory
 maxmemory 2gb
 maxmemory-policy allkeys-lru
 ```
@@ -405,44 +405,44 @@ maxmemory-policy allkeys-lru
 ### Elasticsearch
 
 ```bash
-# Aumentar heap size para grandes volúmenes
+# Increase heap size for large volumes
 ES_JAVA_OPTS=-Xms2g -Xmx2g
 ```
 
 ---
 
-## 📞 Soporte
+## 📞 Support
 
-Para asistencia técnica:
+For technical assistance:
 
 - **Email**: soporte-tecnico@justicia.ma
-- **Tel**: +212 537 XXX XXX
-- **Documentación**: https://docs.justicia.ma
+- **Phone**: +212 537 XXX XXX
+- **Documentation**: https://docs.justicia.ma
 - **Issues**: https://github.com/morocco-gov/sistema-judicial-digital/issues
 
 ---
 
-## 📝 Checklist de Deployment
+## 📝 Deployment Checklist
 
-- [ ] Servidor con requisitos mínimos configurado
-- [ ] Docker y Docker Compose instalados
-- [ ] Variables de entorno configuradas (.env)
-- [ ] SECRET_KEY generada (mínimo 32 caracteres)
-- [ ] Passwords de DB cambiadas
-- [ ] Certificados SSL instalados (Let's Encrypt o propios)
-- [ ] Firewall configurado (puertos 80, 443, 22)
-- [ ] HSM configurado (hardware o cloud)
-- [ ] Backups automáticos programados
-- [ ] Monitoreo configurado (Grafana, Flower)
-- [ ] Health checks verificados
-- [ ] Logs funcionando correctamente
-- [ ] DNS apuntando a servidor
-- [ ] ALLOWED_ORIGINS actualizado con dominio real
-- [ ] Pruebas de carga realizadas
-- [ ] Documentación entregada al equipo
+- [ ] Server with minimum requirements configured
+- [ ] Docker and Docker Compose installed
+- [ ] Environment variables configured (.env)
+- [ ] SECRET_KEY generated (minimum 32 characters)
+- [ ] DB passwords changed
+- [ ] SSL certificates installed (Let's Encrypt or self-signed)
+- [ ] Firewall configured (ports 80, 443, 22)
+- [ ] HSM configured (hardware or cloud)
+- [ ] Automated backups scheduled
+- [ ] Monitoring configured (Grafana, Flower)
+- [ ] Health checks verified
+- [ ] Logs working correctly
+- [ ] DNS pointing to server
+- [ ] ALLOWED_ORIGINS updated with real domain
+- [ ] Load tests performed
+- [ ] Documentation delivered to team
 
 ---
 
-**Versión**: 1.0.0  
-**Última actualización**: Octubre 2025  
-**Sistema Judicial Digital - Reino de Marruecos** 🇲🇦
+**Version**: 1.0.0  
+**Last updated**: October 2025  
+**Digital Judicial System - Kingdom of Morocco** 🇲🇦

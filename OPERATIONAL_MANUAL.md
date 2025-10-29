@@ -1,128 +1,128 @@
-# Manual Operativo - Sistema Judicial Digital Marruecos
+# Operational Manual - Digital Judicial System Morocco
 
-## 📋 Índice
+## 📋 Index
 
-1. [Procedimientos Diarios](#procedimientos-diarios)
-2. [Monitoreo del Sistema](#monitoreo-del-sistema)
-3. [Gestión de Usuarios](#gestión-de-usuarios)
-4. [Backups y Restauración](#backups-y-restauración)
+1. [Daily Procedures](#daily-procedures)
+2. [System Monitoring](#system-monitoring)
+3. [User Management](#user-management)
+4. [Backups and Restoration](#backups-and-restoration)
 5. [Troubleshooting](#troubleshooting)
-6. [Mantenimiento](#mantenimiento)
-7. [Escalado y Performance](#escalado-y-performance)
-8. [Seguridad y Compliance](#seguridad-y-compliance)
+6. [Maintenance](#maintenance)
+7. [Scaling and Performance](#scaling-and-performance)
+8. [Security and Compliance](#security-and-compliance)
 
 ---
 
-## 1. Procedimientos Diarios
+## 1. Daily Procedures
 
-### 1.1 Verificación Matutina
+### 1.1 Morning Verification
 
-Cada mañana, el equipo operativo debe:
+Each morning, the operations team should:
 
 ```bash
-# 1. Verificar estado de servicios
+# 1. Verify service status
 docker-compose ps
 
-# 2. Health check del sistema
+# 2. System health check
 curl https://justicia.ma/health
 
-# 3. Verificar métricas clave
+# 3. Verify key metrics
 docker stats --no-stream
 
-# 4. Revisar logs de errores
+# 4. Review error logs
 docker-compose logs --tail=100 | grep ERROR
 
-# 5. Verificar backup nocturno
+# 5. Verify nightly backup
 ls -lth backups/full/ | head -1
 ```
 
-**Resultado Esperado:**
-- Todos los servicios en estado `Up`
-- Health check retorna `{"status": "healthy"}`
+**Expected Result:**
+- All services in `Up` state
+- Health check returns `{"status": "healthy"}`
 - CPU < 70%, Memory < 80%
-- Sin errores críticos en logs
-- Backup nocturno completado
+- No critical errors in logs
+- Nightly backup completed
 
-### 1.2 Revisión de Auditoría
+### 1.2 Audit Review
 
 Dashboard: `https://justicia.ma/audit`
 
-1. **Acceder como admin/clerk**
-2. **Revisar estadísticas del día anterior:**
-   - Total de acciones
-   - Usuarios activos
-   - Eventos de seguridad
-3. **Filtrar por tipo:**
-   - LOGIN/LOGOUT: Verificar patrones normales
-   - CREATE_CASE: Validar volumen esperado
-   - ERROR: Investigar cualquier error
-4. **Exportar reporte diario** (JSON/CSV)
+1. **Access as admin/clerk**
+2. **Review previous day statistics:**
+   - Total actions
+   - Active users
+   - Security events
+3. **Filter by type:**
+   - LOGIN/LOGOUT: Verify normal patterns
+   - CREATE_CASE: Validate expected volume
+   - ERROR: Investigate any errors
+4. **Export daily report** (JSON/CSV)
 
-### 1.3 Verificación de Backups
+### 1.3 Backup Verification
 
 ```bash
-# Verificar último backup
+# Verify last backup
 cat backups/backup_report_*.txt | tail -n 1
 
-# Test de integridad
+# Integrity test
 gunzip -t backups/database/db_backup_*.sql.gz
 tar -tzf backups/files/files_backup_*.tar.gz > /dev/null
 ```
 
 ---
 
-## 2. Monitoreo del Sistema
+## 2. System Monitoring
 
-### 2.1 Dashboards de Monitoreo
+### 2.1 Monitoring Dashboards
 
-| Dashboard | URL | Credenciales | Propósito |
+| Dashboard | URL | Credentials | Purpose |
 |-----------|-----|--------------|-----------|
-| **Grafana** | http://servidor:3000 | admin / ${GRAFANA_ADMIN_PASSWORD} | Métricas generales |
-| **Flower** | http://servidor:5555 | - | Monitoreo Celery |
-| **Redis Commander** | http://servidor:8081 | - | Gestión Redis |
-| **ES Head** | http://servidor:9100 | - | Monitor Elasticsearch |
+| **Grafana** | http://server:3000 | admin / ${GRAFANA_ADMIN_PASSWORD} | General metrics |
+| **Flower** | http://server:5555 | - | Celery monitoring |
+| **Redis Commander** | http://server:8081 | - | Redis management |
+| **ES Head** | http://server:9100 | - | Elasticsearch monitor |
 
-### 2.2 Métricas Clave a Monitorear
+### 2.2 Key Metrics to Monitor
 
 #### Performance
-- **Tiempo de Respuesta**: < 200ms (p95)
+- **Response Time**: < 200ms (p95)
 - **Throughput**: > 100 req/s
 - **Error Rate**: < 1%
 
-#### Recursos
-- **CPU**: < 70% promedio
-- **Memoria**: < 80% uso
-- **Disco**: < 80% uso
+#### Resources
+- **CPU**: < 70% average
+- **Memory**: < 80% usage
+- **Disk**: < 80% usage
 - **Network**: < 80% bandwidth
 
-#### Aplicación
-- **Usuarios Activos**: Monitorear picos
-- **Casos Creados/día**: Baseline establecer
-- **Documentos Procesados/hora**: Validar OCR
+#### Application
+- **Active Users**: Monitor peaks
+- **Cases Created/day**: Establish baseline
+- **Documents Processed/hour**: Validate OCR
 
-### 2.3 Alertas Configuradas
+### 2.3 Configured Alerts
 
 ```bash
-# Verificar alertas en Slack/Email
-# Configuradas en .env:
+# Verify alerts in Slack/Email
+# Configured in .env:
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
 ALERT_EMAIL=admin@justicia.ma
 ```
 
-**Alertas Críticas:**
-- CPU > 90% por 5 minutos
-- Memoria > 95%
-- Disco > 90%
+**Critical Alerts:**
+- CPU > 90% for 5 minutes
+- Memory > 95%
+- Disk > 90%
 - Error rate > 5%
-- Servicio down
+- Service down
 
 ---
 
-## 3. Gestión de Usuarios
+## 3. User Management
 
-### 3.1 Crear Usuario
+### 3.1 Create User
 
-**Frontend:** Dashboard Admin → Usuarios → Crear Usuario
+**Frontend:** Admin Dashboard → Users → Create User
 
 **Backend (CLI):**
 ```bash
@@ -132,19 +132,19 @@ from app.database import SessionLocal
 
 db = SessionLocal()
 user = User(
-    username='nuevo.usuario',
-    email='usuario@justicia.ma',
+    username='new.user',
+    email='user@justicia.ma',
     role='JUDGE',  # ADMIN, JUDGE, LAWYER, CLERK, CITIZEN
-    full_name='Nombre Completo'
+    full_name='Full Name'
 )
-user.set_password('password_temporal')
+user.set_password('temporary_password')
 db.add(user)
 db.commit()
-print(f'Usuario {user.username} creado')
+print(f'User {user.username} created')
 "
 ```
 
-### 3.2 Resetear Password
+### 3.2 Reset Password
 
 ```bash
 docker-compose exec app1 python -c "
@@ -152,14 +152,14 @@ from app.models import User
 from app.database import SessionLocal
 
 db = SessionLocal()
-user = db.query(User).filter(User.username == 'usuario').first()
-user.set_password('nueva_password_temporal')
+user = db.query(User).filter(User.username == 'user').first()
+user.set_password('new_temporary_password')
 db.commit()
-print(f'Password de {user.username} reseteada')
+print(f'Password for {user.username} reset')
 "
 ```
 
-### 3.3 Cambiar Rol
+### 3.3 Change Role
 
 ```bash
 docker-compose exec app1 python -c "
@@ -167,14 +167,14 @@ from app.models import User, UserRole
 from app.database import SessionLocal
 
 db = SessionLocal()
-user = db.query(User).filter(User.username == 'usuario').first()
+user = db.query(User).filter(User.username == 'user').first()
 user.role = UserRole.ADMIN
 db.commit()
-print(f'{user.username} ahora es {user.role}')
+print(f'{user.username} is now {user.role}')
 "
 ```
 
-### 3.4 Desactivar Usuario
+### 3.4 Deactivate User
 
 ```bash
 docker-compose exec app1 python -c "
@@ -182,114 +182,114 @@ from app.models import User
 from app.database import SessionLocal
 
 db = SessionLocal()
-user = db.query(User).filter(User.username == 'usuario').first()
+user = db.query(User).filter(User.username == 'user').first()
 user.is_active = False
 db.commit()
-print(f'{user.username} desactivado')
+print(f'{user.username} deactivated')
 "
 ```
 
 ---
 
-## 4. Backups y Restauración
+## 4. Backups and Restoration
 
-### 4.1 Backup Manual
+### 4.1 Manual Backup
 
 ```bash
-# Backup completo inmediato
+# Immediate full backup
 ./scripts/backup.sh full
 
-# Verificar backup
+# Verify backup
 ls -lth backups/full/ | head -1
 cat backups/backup_report_*.txt | tail -n 1
 ```
 
-### 4.2 Backups Automáticos
+### 4.2 Automated Backups
 
-**Configurado en cron:**
+**Configured in cron:**
 ```bash
-# Ver cron jobs
+# View cron jobs
 crontab -l
 
-# Resultado esperado:
-0 2 * * * cd /ruta/proyecto && ./scripts/backup.sh full >> logs/backup.log 2>&1
+# Expected result:
+0 2 * * * cd /path/project && ./scripts/backup.sh full >> logs/backup.log 2>&1
 ```
 
-**Cambiar schedule:**
+**Change schedule:**
 ```bash
 export BACKUP_SCHEDULE="0 3 * * *"  # 3 AM
 ./scripts/setup-cron.sh
 ```
 
-### 4.3 Restauración
+### 4.3 Restoration
 
-**⚠️ PROCEDIMIENTO CRÍTICO - REQUIERE CONFIRMACIÓN**
+**⚠️ CRITICAL PROCEDURE - REQUIRES CONFIRMATION**
 
 ```bash
-# 1. Listar backups disponibles
+# 1. List available backups
 ls -lth backups/full/
 
-# 2. Verificar integridad del backup
+# 2. Verify backup integrity
 gunzip -t backups/database/db_backup_20241013_140000.sql.gz
 tar -tzf backups/full/full_backup_20241013_140000.tar.gz
 
-# 3. Ejecutar restauración (REQUIERE CONFIRMACIÓN MANUAL)
+# 3. Execute restoration (REQUIRES MANUAL CONFIRMATION)
 ./scripts/restore.sh 20241013_140000 full
 
-# El script pedirá confirmación:
-# ¿Está seguro que desea continuar? (escriba 'SI' para confirmar):
+# Script will ask for confirmation:
+# Are you sure you want to continue? (type 'YES' to confirm):
 ```
 
-### 4.4 Procedimiento de Recuperación ante Desastres
+### 4.4 Disaster Recovery Procedure
 
-**Escenario: Pérdida total del servidor**
+**Scenario: Total server loss**
 
 ```bash
-# 1. Provisionar nuevo servidor (8GB RAM, 4 CPUs)
-# 2. Instalar Docker + Docker Compose
+# 1. Provision new server (8GB RAM, 4 CPUs)
+# 2. Install Docker + Docker Compose
 
-# 3. Clonar repositorio
+# 3. Clone repository
 git clone https://github.com/morocco-gov/sistema-judicial-digital.git
 cd sistema-judicial-digital
 
-# 4. Copiar backups desde ubicación segura
+# 4. Copy backups from secure location
 scp -r backup-server:/backups/* ./backups/
 
-# 5. Configurar .env
+# 5. Configure .env
 cp .env.example .env
-nano .env  # Configurar con valores de producción
+nano .env  # Configure with production values
 
-# 6. Iniciar servicios
+# 6. Start services
 docker-compose up -d
 
-# 7. Restaurar desde último backup
-./scripts/restore.sh [TIMESTAMP_MAS_RECIENTE] full
+# 7. Restore from latest backup
+./scripts/restore.sh [MOST_RECENT_TIMESTAMP] full
 
-# 8. Verificar sistema
+# 8. Verify system
 curl http://localhost/health
 docker-compose ps
 
-# 9. Actualizar DNS si cambió IP
-# 10. Verificar SSL/certificados
+# 9. Update DNS if IP changed
+# 10. Verify SSL/certificates
 
-# RTO (Recovery Time Objective): < 1 hora
-# RPO (Recovery Point Objective): < 1 día
+# RTO (Recovery Time Objective): < 1 hour
+# RPO (Recovery Point Objective): < 1 day
 ```
 
 ---
 
 ## 5. Troubleshooting
 
-### 5.1 Aplicación No Responde
+### 5.1 Application Not Responding
 
 ```bash
-# 1. Verificar estado de contenedores
+# 1. Verify container status
 docker-compose ps
 
-# 2. Ver logs recientes
+# 2. View recent logs
 docker-compose logs --tail=100 app1
 
-# 3. Verificar conectividad a DB
+# 3. Verify DB connectivity
 docker-compose exec app1 python -c "
 from app.database import engine
 try:
@@ -299,24 +299,24 @@ except Exception as e:
     print(f'DB Error: {e}')
 "
 
-# 4. Reiniciar aplicación
+# 4. Restart application
 docker-compose restart app1 app2 app3
 
-# 5. Verificar health check
+# 5. Verify health check
 curl http://localhost/health
 ```
 
-### 5.2 Base de Datos Lenta
+### 5.2 Slow Database
 
 ```bash
-# 1. Ver conexiones activas
+# 1. View active connections
 docker-compose exec db psql -U justicia -d justicia_db -c "
     SELECT count(*) as connections 
     FROM pg_stat_activity 
     WHERE state = 'active';
 "
 
-# 2. Ver queries lentas
+# 2. View slow queries
 docker-compose exec db psql -U justicia -d justicia_db -c "
     SELECT pid, now() - pg_stat_activity.query_start AS duration, query 
     FROM pg_stat_activity 
@@ -324,149 +324,149 @@ docker-compose exec db psql -U justicia -d justicia_db -c "
     ORDER BY duration DESC;
 "
 
-# 3. Terminar query problemática
+# 3. Terminate problematic query
 docker-compose exec db psql -U justicia -d justicia_db -c "
     SELECT pg_terminate_backend([PID]);
 "
 
-# 4. Vacuum base de datos
+# 4. Vacuum database
 docker-compose exec db psql -U justicia -d justicia_db -c "VACUUM ANALYZE;"
 ```
 
 ### 5.3 Redis Out of Memory
 
 ```bash
-# 1. Ver uso de memoria
+# 1. View memory usage
 docker-compose exec redis redis-cli INFO memory
 
-# 2. Limpiar keys expiradas
+# 2. Clean expired keys
 docker-compose exec redis redis-cli FLUSHDB
 
-# 3. Aumentar maxmemory (temporal)
+# 3. Increase maxmemory (temporary)
 docker-compose exec redis redis-cli CONFIG SET maxmemory 1gb
 
-# 4. Reiniciar Redis
+# 4. Restart Redis
 docker-compose restart redis
 ```
 
-### 5.4 Celery Workers No Procesan Tareas
+### 5.4 Celery Workers Not Processing Tasks
 
 ```bash
-# 1. Ver estado de workers
+# 1. View worker status
 docker-compose logs celery-cpu --tail=50
 docker-compose logs celery-io --tail=50
 
-# 2. Ver cola de tareas
+# 2. View task queue
 docker-compose exec redis redis-cli LLEN celery
 
-# 3. Purgar cola (CUIDADO)
+# 3. Purge queue (CAUTION)
 docker-compose exec app1 celery -A backend.app.celery.celery purge
 
-# 4. Reiniciar workers
+# 4. Restart workers
 docker-compose restart celery-cpu celery-io celery-hsm
 ```
 
-### 5.5 OCR No Funciona
+### 5.5 OCR Not Working
 
 ```bash
-# 1. Verificar Tesseract instalado
+# 1. Verify Tesseract installed
 docker-compose exec app1 tesseract --version
 
-# 2. Verificar idiomas
+# 2. Verify languages
 docker-compose exec app1 tesseract --list-langs
 
-# Debe mostrar: ara, fra, spa
+# Should display: ara, fra, spa
 
-# 3. Si falta idioma, reconstruir imagen
+# 3. If language missing, rebuild image
 docker-compose build --no-cache app1
 docker-compose up -d app1
 ```
 
 ---
 
-## 6. Mantenimiento
+## 6. Maintenance
 
-### 6.1 Mantenimiento Semanal
+### 6.1 Weekly Maintenance
 
-**Cada Domingo a las 3 AM:**
+**Every Sunday at 3 AM:**
 
 ```bash
-# 1. Backup completo
+# 1. Full backup
 ./scripts/backup.sh full
 
-# 2. Vacuum base de datos
+# 2. Vacuum database
 docker-compose exec db psql -U justicia -d justicia_db -c "VACUUM FULL ANALYZE;"
 
-# 3. Limpiar logs antiguos (>30 días)
+# 3. Clean old logs (>30 days)
 find ./logs -name "*.log" -mtime +30 -delete
 
-# 4. Limpiar archivos temp
+# 4. Clean temp files
 docker-compose exec app1 find /app/temp -type f -mtime +7 -delete
 
-# 5. Limpiar imágenes Docker no usadas
+# 5. Clean unused Docker images
 docker system prune -a -f
 
-# 6. Actualizar índice Elasticsearch
+# 6. Update Elasticsearch index
 curl -X POST "http://localhost:9200/_forcemerge?max_num_segments=1"
 ```
 
-### 6.2 Mantenimiento Mensual
+### 6.2 Monthly Maintenance
 
-**Primer domingo de cada mes:**
+**First Sunday of each month:**
 
 ```bash
-# 1. Revisar y rotar logs de audit (>90 días)
+# 1. Review and rotate audit logs (>90 days)
 docker-compose exec db psql -U justicia -d justicia_db -c "
     DELETE FROM audit_logs 
     WHERE created_at < NOW() - INTERVAL '90 days';
 "
 
-# 2. Actualizar certificados SSL (si expiran)
+# 2. Update SSL certificates (if expiring)
 certbot renew
 
-# 3. Revisar y actualizar dependencias de seguridad
+# 3. Review and update security dependencies
 cd backend
 pip list --outdated
-# Actualizar solo patches de seguridad
+# Update only security patches
 
-# 4. Backup offsite (subir a S3/Azure)
+# 4. Offsite backup (upload to S3/Azure)
 aws s3 sync ./backups s3://justicia-backups/$(date +%Y%m)/
 ```
 
-### 6.3 Actualizaciones del Sistema
+### 6.3 System Updates
 
 ```bash
-# 1. Backup antes de actualizar
+# 1. Backup before updating
 ./scripts/backup.sh full
 
-# 2. Pull última versión
+# 2. Pull latest version
 git pull origin main
 
-# 3. Reconstruir imágenes
+# 3. Rebuild images
 docker-compose build --no-cache
 
-# 4. Actualización sin downtime (rolling update)
+# 4. Update without downtime (rolling update)
 docker-compose up -d --force-recreate --no-deps app1
 sleep 30
 docker-compose up -d --force-recreate --no-deps app2
 sleep 30
 docker-compose up -d --force-recreate --no-deps app3
 
-# 5. Verificar sistema
+# 5. Verify system
 curl http://localhost/health
 docker-compose logs --tail=100 | grep ERROR
 
-# 6. Si hay problemas, rollback
-./scripts/restore.sh [TIMESTAMP_BACKUP] full
+# 6. If problems, rollback
+./scripts/restore.sh [BACKUP_TIMESTAMP] full
 ```
 
 ---
 
-## 7. Escalado y Performance
+## 7. Scaling and Performance
 
-### 7.1 Escalado Horizontal (Añadir Instancias)
+### 7.1 Horizontal Scaling (Add Instances)
 
-**Editar docker-compose.yml:**
+**Edit docker-compose.yml:**
 
 ```yaml
   app4:
@@ -475,33 +475,33 @@ docker-compose logs --tail=100 | grep ERROR
       - DATABASE_URL=${DATABASE_URL}
       - SECRET_KEY=${SECRET_KEY}
       - SERVER_ID=app-4
-      # ... (copiar configuración de app1-3)
+      # ... (copy configuration from app1-3)
 ```
 
-**Actualizar Nginx (nginx.conf):**
+**Update Nginx (nginx.conf):**
 
 ```nginx
 upstream backend {
     server app1:8000;
     server app2:8000;
     server app3:8000;
-    server app4:8000;  # Añadir nueva instancia
+    server app4:8000;  # Add new instance
 }
 ```
 
-**Aplicar cambios:**
+**Apply changes:**
 
 ```bash
 docker-compose up -d app4
 docker-compose restart nginx
 ```
 
-### 7.2 Optimización de Performance
+### 7.2 Performance Optimization
 
 **PostgreSQL:**
 
 ```bash
-# Aumentar shared_buffers
+# Increase shared_buffers
 docker-compose exec db psql -U justicia -d justicia_db -c "
     ALTER SYSTEM SET shared_buffers = '2GB';
     ALTER SYSTEM SET effective_cache_size = '6GB';
@@ -512,27 +512,27 @@ docker-compose exec db psql -U justicia -d justicia_db -c "
 **Redis:**
 
 ```bash
-# Aumentar maxmemory
+# Increase maxmemory
 docker-compose exec redis redis-cli CONFIG SET maxmemory 2gb
 ```
 
 **Elasticsearch:**
 
 ```bash
-# Aumentar heap size (editar docker-compose.yml)
+# Increase heap size (edit docker-compose.yml)
 ES_JAVA_OPTS=-Xms2g -Xmx2g
 ```
 
 ---
 
-## 8. Seguridad y Compliance
+## 8. Security and Compliance
 
-### 8.1 Auditoría de Seguridad
+### 8.1 Security Audit
 
-**Mensual:**
+**Monthly:**
 
 ```bash
-# 1. Revisar intentos de login fallidos
+# 1. Review failed login attempts
 docker-compose exec db psql -U justicia -d justicia_db -c "
     SELECT user_id, count(*) as attempts 
     FROM audit_logs 
@@ -543,7 +543,7 @@ docker-compose exec db psql -U justicia -d justicia_db -c "
     HAVING count(*) > 10;
 "
 
-# 2. Revisar cambios de permisos
+# 2. Review permission changes
 docker-compose exec db psql -U justicia -d justicia_db -c "
     SELECT * FROM audit_logs 
     WHERE action IN ('UPDATE_USER', 'CHANGE_ROLE') 
@@ -551,7 +551,7 @@ docker-compose exec db psql -U justicia -d justicia_db -c "
     ORDER BY created_at DESC;
 "
 
-# 3. Exportar reporte de auditoría
+# 3. Export audit report
 curl -H "Authorization: Bearer $ADMIN_TOKEN" \
      "https://justicia.ma/api/audit/export?format=csv&start_date=2024-10-01" \
      > audit_report_$(date +%Y%m).csv
@@ -559,35 +559,35 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
 
 ### 8.2 Compliance Checklist
 
-**Mensual - Verificar:**
+**Monthly - Verify:**
 
-- [ ] Backups completados y verificados (30 días retención)
-- [ ] Logs de auditoría intactos (2555 días retención legal)
-- [ ] Certificados SSL válidos (>30 días vigencia)
-- [ ] Rate limiting activo y funcional
-- [ ] HSM funcional (verificar firma digital)
-- [ ] Usuarios inactivos desactivados (>90 días sin login)
-- [ ] Passwords caducados actualizados (>90 días)
-- [ ] Vulnerabilidades de seguridad parcheadas
-- [ ] Documentación actualizada
-- [ ] Tests de recuperación realizados
+- [ ] Backups completed and verified (30-day retention)
+- [ ] Audit logs intact (2555-day legal retention)
+- [ ] SSL certificates valid (>30 days validity)
+- [ ] Rate limiting active and functional
+- [ ] HSM functional (verify digital signature)
+- [ ] Inactive users deactivated (>90 days without login)
+- [ ] Expired passwords updated (>90 days)
+- [ ] Security vulnerabilities patched
+- [ ] Documentation updated
+- [ ] Recovery tests performed
 
 ---
 
-## 9. Contactos de Emergencia
+## 9. Emergency Contacts
 
-### Equipo Técnico
+### Technical Team
 
-| Rol | Nombre | Tel | Email |
+| Role | Name | Phone | Email |
 |-----|--------|-----|-------|
 | **Lead DevOps** | - | +212 XXX XXX XXX | devops@justicia.ma |
 | **DBA** | - | +212 XXX XXX XXX | dba@justicia.ma |
 | **Security Officer** | - | +212 XXX XXX XXX | security@justicia.ma |
 | **On-Call 24/7** | - | +212 XXX XXX XXX | oncall@justicia.ma |
 
-### Proveedores
+### Vendors
 
-| Servicio | Contacto | Tel | SLA |
+| Service | Contact | Phone | SLA |
 |----------|----------|-----|-----|
 | **Hosting** | - | - | 4h response |
 | **HSM** | - | - | 2h response |
@@ -595,53 +595,53 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
 
 ---
 
-## 10. Anexos
+## 10. Appendices
 
-### A. Comandos Rápidos
+### A. Quick Commands
 
 ```bash
-# Health check completo
+# Complete health check
 ./deploy.sh health
 
-# Ver todos los logs
+# View all logs
 docker-compose logs -f
 
-# Estadísticas de recursos
+# Resource statistics
 docker stats
 
-# Conectar a DB
+# Connect to DB
 docker-compose exec db psql -U justicia -d justicia_db
 
-# Conectar a Redis
+# Connect to Redis
 docker-compose exec redis redis-cli
 
-# Ver workers Celery
+# View Celery workers
 docker-compose exec app1 celery -A backend.app.celery.celery inspect active
 ```
 
-### B. Procedimientos de Emergencia
+### B. Emergency Procedures
 
-**Sistema completamente caído:**
+**System completely down:**
 
-1. Verificar servidor físico/VM
-2. Verificar red/conectividad
-3. Reiniciar Docker: `systemctl restart docker`
-4. Iniciar servicios: `docker-compose up -d`
-5. Verificar logs: `docker-compose logs`
-6. Si persiste: Restaurar desde backup
+1. Verify physical server/VM
+2. Verify network/connectivity
+3. Restart Docker: `systemctl restart docker`
+4. Start services: `docker-compose up -d`
+5. Verify logs: `docker-compose logs`
+6. If persists: Restore from backup
 
-**Incidente de seguridad:**
+**Security incident:**
 
-1. Aislar sistema afectado
-2. Notificar Security Officer
-3. Capturar evidencia (logs, dumps)
-4. Análisis forense
-5. Remediar vulnerabilidad
-6. Restaurar desde backup limpio
-7. Reportar a autoridades (si aplica)
+1. Isolate affected system
+2. Notify Security Officer
+3. Capture evidence (logs, dumps)
+4. Forensic analysis
+5. Remediate vulnerability
+6. Restore from clean backup
+7. Report to authorities (if applicable)
 
 ---
 
-**Versión**: 1.0.0  
-**Última actualización**: Octubre 2025  
-**Sistema Judicial Digital - Reino de Marruecos** 🇲🇦
+**Version**: 1.0.0  
+**Last updated**: October 2025  
+**Digital Judicial System - Kingdom of Morocco** 🇲🇦
