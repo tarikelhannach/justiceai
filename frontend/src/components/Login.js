@@ -24,7 +24,7 @@ import {
   QrCode,
   Email,
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const { login } = useAuth();
@@ -66,9 +66,12 @@ const Login = () => {
       if (result.success) {
         // Login exitoso
         return;
-      } else if (result.error?.includes('2FA')) {
+      } else if (result.requires2FA || result.error?.includes('2FA')) {
         // Requiere 2FA
         setStep(1);
+        if (result.error && !result.error.includes('2FA')) {
+          setError(result.error);
+        }
       } else {
         setError(result.error);
       }

@@ -1,6 +1,7 @@
 {
   "name": "justicia-digital-frontend",
   "version": "1.0.0",
+  "type": "module",
   "description": "Frontend del Sistema Judicial Digital - Marruecos",
   "private": true,
   "dependencies": {
@@ -27,22 +28,14 @@
     "react-qr-scanner": "^1.0.0-alpha.11",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.20.1",
-    "react-scripts": "5.0.1",
     "recharts": "^2.8.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -60,10 +53,11 @@
     "@types/node": "^20.10.4",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
     "eslint": "^8.55.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "typescript": "^4.9.5"
-  },
-  "proxy": "http://localhost:8000"
+    "typescript": "^4.9.5",
+    "vite": "^5.0.8"
+  }
 }

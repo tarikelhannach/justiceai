@@ -1,6 +1,17 @@
 # Digital Judicial System - Morocco
 
 ## Recent Changes
+**October 29, 2025 - Frontend Migration to Vite**
+- **Complete Migration from Create React App to Vite**: Modernized frontend build system
+  - Updated package.json: Removed react-scripts, added vite and @vitejs/plugin-react
+  - Configured vite.config.js with JSX support for .js files (esbuild loader)
+  - Fixed server configuration for Replit environment (host 0.0.0.0, port 5000, allowedHosts: true)
+  - Removed duplicate contexts folder, consolidated to single AuthContext in context/
+  - Fixed 2FA login flow: Added requires2FA flag detection in Login component
+  - Removed duplicate Login.jsx file
+  - Workflow now uses `npm run dev` command successfully
+  - Preview working correctly with proper UTF-8 encoding
+
 **October 14, 2025 - Enterprise Features Implementation**
 - **OCR Multi-Language Processing**: Tesseract OCR with Arabic/French/Spanish support for document digitization
   - SyncOCRService for unified sync/async OCR workflows
