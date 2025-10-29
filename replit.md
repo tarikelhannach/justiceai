@@ -1,6 +1,32 @@
 # Digital Judicial System - Morocco
 
 ## Recent Changes
+**October 29, 2025 - CI/CD Pipeline & Advanced OCR Implementation**
+- **Complete CI/CD Pipeline**: Automated testing and deployment infrastructure
+  - GitHub Actions workflow with multi-stage pipeline (tests, security, performance)
+  - Backend quality gates: Black, isort, Flake8, mypy, pytest with 70% coverage requirement
+  - Frontend quality gates: ESLint, Prettier, Jest, build verification
+  - Security scanning: Trivy vulnerability scanner, Python Safety, NPM audit
+  - Performance testing: Locust load tests (1500 concurrent users requirement)
+  - Automated deployment to Replit on main branch merge
+  - Test scripts: `backend/scripts/run_tests.sh`, pytest.ini configuration
+  - Documentation: `CICD_PIPELINE_GUIDE.md` with complete pipeline architecture
+
+- **Advanced OCR Integration**: State-of-the-art multi-engine OCR system
+  - **QARI-OCR**: Arabic text recognition (CER: 0.061, WER: 0.160, BLEU: 0.737)
+    - Best-in-class for diacritics-rich Arabic text and historical manuscripts
+    - Qwen2-VL-2B-Instruct with 8-bit quantization (2B parameters)
+    - Requires GPU with 8GB+ VRAM (NVIDIA T4, A100)
+  - **EasyOCR**: Fast multi-language OCR (80+ languages, good Arabic support)
+    - PyTorch-based with CUDA acceleration
+    - Excellent for mixed-language documents
+  - **Tesseract**: Reliable fallback (100+ languages, always available)
+  - Automatic engine selection based on language and availability
+  - Service: `backend/app/services/advanced_ocr_service.py`
+  - Dependencies: `backend/requirements-ocr-advanced.txt` (optional installation)
+  - API endpoint: POST /api/documents/{id}/process-ocr with engine parameter
+  - Documentation: `ADVANCED_OCR_GUIDE.md` with benchmarks and usage guide
+
 **October 29, 2025 - Frontend Migration to Vite & i18n Improvements**
 - **Complete Migration from Create React App to Vite**: Modernized frontend build system
   - Updated package.json: Removed react-scripts, added vite and @vitejs/plugin-react
@@ -99,9 +125,19 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 - **Case Management**: Provides CRUD operations and advanced search with filters and RBAC.
 - **Document Management**: Secure upload/download with RBAC, OCR processing, Elasticsearch indexing, and HSM digital signatures.
 - **Internationalization**: Dynamic language switching and RTL adjustments for Spanish, French, and Arabic.
-- **OCR Processing**: Tesseract multi-language OCR (Arabic, French, Spanish) with sync/async workflows.
+- **OCR Processing**: Multi-engine OCR system with automatic selection
+  - QARI-OCR (state-of-the-art Arabic): CER 0.061, WER 0.160
+  - EasyOCR (fast multi-language): 80+ languages supported
+  - Tesseract (reliable fallback): 100+ languages, always available
+  - Sync/async workflows with confidence scoring
 - **Search**: Elasticsearch full-text search with fuzzy matching, highlighting, and multi-language analyzers.
 - **Digital Signatures**: HSM-based document signing (PKCS#11, Azure Key Vault, Software fallback).
+- **CI/CD Pipeline**: Automated testing, security scanning, and deployment
+  - Multi-stage pipeline: Backend tests → Frontend tests → Security → Integration → Performance → Deploy
+  - Quality gates with 70% backend coverage requirement
+  - Trivy security scanning, Safety checks, NPM audit
+  - Performance testing with Locust (1500 concurrent users)
+  - Automatic deployment to Replit on main branch
 - **Accessibility**: WCAG 2.1 AA compliant with skip navigation, ARIA labels, keyboard support, and verified color contrast.
 
 ### Feature Specifications
@@ -140,6 +176,12 @@ The frontend features a modern, responsive design with a purple gradient theme, 
 - **Data Validation**: `pydantic[email]`
 - **Rate Limiting**: `slowapi`
 - **Caching**: `redis`
+- **OCR (Basic)**: `pytesseract`, `pdf2image`, `PyMuPDF`, `Pillow`
+- **OCR (Advanced - Optional)**:
+  - **QARI**: `transformers`, `torch`, `accelerate`, `bitsandbytes`, `qwen-vl-utils`
+  - **EasyOCR**: `easyocr`, `opencv-python-headless`
+- **Testing**: `pytest`, `pytest-cov`, `pytest-asyncio`, `black`, `flake8`, `isort`, `mypy`
+- **Performance**: `locust` (load testing)
 
 ### Pending Integrations
 - **Email Service (Critical for Production)**: NotificationService implemented, requires configuration:
