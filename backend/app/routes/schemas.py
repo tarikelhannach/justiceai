@@ -5,7 +5,35 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
 
-from ..models import UserRole, CaseStatus, CaseType, Priority, DocumentType, SignatureStatus
+from ..models import UserRole, CaseStatus
+
+# Define missing enums locally
+class CaseType(str, Enum):
+    CIVIL = "civil"
+    CRIMINAL = "criminal"
+    COMMERCIAL = "commercial"
+    ADMINISTRATIVE = "administrative"
+    FAMILY = "family"
+    OTHER = "other"
+
+class Priority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    URGENT = "urgent"
+
+class DocumentType(str, Enum):
+    COMPLAINT = "complaint"
+    EVIDENCE = "evidence"
+    RULING = "ruling"
+    APPEAL = "appeal"
+    OTHER = "other"
+
+class SignatureStatus(str, Enum):
+    UNSIGNED = "unsigned"
+    SIGNED = "signed"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
 
 # ========================================
 # SCHEMAS DE USUARIO
@@ -223,6 +251,15 @@ class SearchResponse(BaseModel):
 # SCHEMAS DE AUDITORÍA
 # ========================================
 
+class AuditLogCreate(BaseModel):
+    action: str = Field(..., description="Acción realizada")
+    resource_type: Optional[str] = Field(None, description="Tipo de recurso")
+    resource_id: Optional[int] = Field(None, description="ID del recurso")
+    ip_address: Optional[str] = Field(None, description="Dirección IP")
+    user_agent: Optional[str] = Field(None, description="User Agent")
+    details: Optional[str] = Field(None, description="Detalles adicionales")
+    status: str = Field("success", description="Estado de la acción")
+
 class AuditLogResponse(BaseModel):
     id: int
     action: str
@@ -239,6 +276,16 @@ class AuditLogResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class AuditLogStats(BaseModel):
+    total_logs: int
+    days: int
+    start_date: datetime
+    by_action: List[Dict[str, Any]]
+    by_user: List[Dict[str, Any]]
+    by_status: List[Dict[str, Any]]
+    by_resource: List[Dict[str, Any]]
+    by_day: List[Dict[str, Any]]
 
 # ========================================
 # SCHEMAS DE HSM

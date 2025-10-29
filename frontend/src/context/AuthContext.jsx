@@ -31,15 +31,21 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, totp_code = null) => {
     try {
-      const data = await authAPI.login(email, password);
+      const data = await authAPI.loginWith2FA(email, password, totp_code);
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
       return { success: true, user: data.user };
     } catch (error) {
+      const status = error.response?.status;
       const message = error.response?.data?.detail || 'Error al iniciar sesión';
+      
+      if (status === 428) {
+        return { success: false, error: message, requires2FA: true };
+      }
+      
       return { success: false, error: message };
     }
   };

@@ -53,10 +53,14 @@
     "passwordsNotMatch": "Les mots de passe ne correspondent pas",
     "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
     "demoCredentials": "Identifiants de démonstration",
-    "demoPasswordFormat": "[rôle]123 (ex: admin123, juez123)"
+    "demoPasswordFormat": "[rôle]123 (ex: admin123, juez123)",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié?",
+    "2faCode": "Code 2FA",
+    "2faHelper": "Entrez le code de votre application d'authentification"
   },
   "dashboard": {
-    "title": "Tableau de Bord d'Administration",
+    "title": "Panneau d'Administration",
     "subtitle": "Système Judiciaire Numérique du Maroc 🇲🇦",
     "systemStatus": "Système Opérationnel - Base de données connectée",
     "totalCases": "Total des Affaires",
@@ -72,7 +76,7 @@
     "uploadDocument": "Télécharger un Document",
     "manageUsers": "Gérer les Utilisateurs",
     "caseNumber": "Numéro",
-    "title": "Titre",
+    "caseTitle": "Titre",
     "owner": "Propriétaire",
     "assignedJudge": "Juge Assigné",
     "status": "Statut",
@@ -152,6 +156,7 @@
     "cases": "Affaires",
     "documents": "Documents",
     "users": "Utilisateurs",
+    "audit": "Audit",
     "settings": "Paramètres",
     "profile": "Profil"
   },
@@ -228,5 +233,17 @@
     "actions": "Actions",
     "all": "Tous",
     "rowsPerPage": "Lignes par page"
+  },
+  "a11y": {
+    "skipToMainContent": "Passer au contenu principal",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "toggleTheme": "Changer de thème",
+    "changeLanguage": "Changer de langue",
+    "userMenu": "Menu utilisateur",
+    "searchBar": "Barre de recherche",
+    "mainNavigation": "Navigation principale",
+    "notifications": "Notifications",
+    "settings": "Paramètres"
   }
 }

@@ -1,0 +1,44 @@
+# .coveragerc - Configuración de Coverage para Sistema Judicial
+
+[run]
+source = app
+omit = 
+    */tests/*
+    */migrations/*
+    */__pycache__/*
+    */venv/*
+    */env/*
+    */.venv/*
+    */.pythonlibs/*
+    */node_modules/*
+    */static/*
+    */templates/*
+
+[report]
+precision = 2
+show_missing = True
+skip_covered = False
+skip_empty = True
+
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    def __str__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+    @abstractmethod
+    @abc.abstractmethod
+    @overload
+    if 0:
+    if False:
+    class .*\bProtocol\):
+
+[html]
+directory = htmlcov
+title = Sistema Judicial Digital - Cobertura de Tests
+
+[xml]
+output = coverage.xml

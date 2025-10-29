@@ -7,6 +7,11 @@ from contextlib import asynccontextmanager
 import logging
 import os
 from datetime import datetime
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+from .middleware.rate_limit import ip_limiter, user_limiter, strict_limiter
 
 # Setup logging básico
 logging.basicConfig(
@@ -30,6 +35,33 @@ async def lifespan(app: FastAPI):
     """Application lifespan management"""
     # Startup
     try:
+        hsm_type = os.getenv('HSM_TYPE', 'software_fallback')
+        environment = os.getenv('ENVIRONMENT', 'testing')
+        
+        if environment == 'production' and hsm_type in ['software', 'software_fallback']:
+            logger.critical("❌ PRODUCTION ENVIRONMENT DETECTED WITH SOFTWARE HSM")
+            logger.critical("❌ Software HSM is NOT ALLOWED in production environments")
+            logger.critical(f"❌ Current HSM type: {hsm_type}")
+            logger.critical("❌ Please configure PKCS#11 or Azure Key Vault for production")
+            raise ValueError(
+                "CRITICAL: Software HSM cannot be used in production. "
+                "Configure HSM_TYPE to 'pkcs11' or 'azure_keyvault' for production deployment."
+            )
+        
+        if environment == 'production':
+            logger.info(f"✅ Production environment validated with HSM type: {hsm_type}")
+        else:
+            logger.info(f"✅ {environment.capitalize()} environment started with HSM type: {hsm_type}")
+        
+        # Initialize Elasticsearch indices
+        try:
+            from .services.elasticsearch_service import get_elasticsearch_service
+            es_service = get_elasticsearch_service()
+            es_service.create_indices()
+            logger.info("✅ Elasticsearch indices initialized successfully")
+        except Exception as es_error:
+            logger.warning(f"⚠️ Elasticsearch initialization failed (search disabled): {es_error}")
+        
         logger.info("Sistema Judicial Digital iniciado correctamente")
     except Exception as e:
         logger.error(f"Error during startup: {e}")
@@ -49,6 +81,17 @@ app = FastAPI(
     redoc_url="/redoc" if settings.debug else None,
     lifespan=lifespan
 )
+
+# Configure rate limiters
+app.state.limiter = user_limiter
+app.state.ip_limiter = ip_limiter
+app.state.strict_limiter = strict_limiter
+
+# Add rate limit exception handler
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add SlowAPI middleware for automatic rate limit headers
+app.add_middleware(SlowAPIMiddleware)
 
 # CORS configurado para Marruecos - Allow all origins in development
 app.add_middleware(
@@ -114,12 +157,15 @@ async def get_metrics():
     }
 
 # Include routers
-from .routes import auth, cases, documents, users
+from .routes import auth, cases, documents, users, audit, search, signatures
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(cases.router, prefix="/api")
 app.include_router(documents.router)
 app.include_router(users.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")
+app.include_router(search.router)
+app.include_router(signatures.router)
 
 # Global exception handler
 @app.exception_handler(Exception)

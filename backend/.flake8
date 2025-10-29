@@ -1,0 +1,34 @@
+# .flake8 - Configuración de Flake8
+
+[flake8]
+max-line-length = 100
+extend-ignore = 
+    E203,  # whitespace before ':' (incompatible con Black)
+    E501,  # line too long (manejado por Black)
+    W503,  # line break before binary operator (estilo preferido)
+    E402,  # module level import not at top of file
+    F401,  # imported but unused (en __init__.py es válido)
+
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    migrations,
+    .eggs,
+    *.egg,
+    build,
+    dist,
+    .tox,
+    .mypy_cache,
+    .pytest_cache
+
+per-file-ignores =
+    __init__.py:F401
+    tests/*:F811,F401
+
+# Complejidad
+max-complexity = 10
+
+# Docstrings
+docstring-convention = google

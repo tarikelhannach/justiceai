@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -12,6 +12,14 @@ import {
   Divider,
   Tab,
   Tabs,
+  Checkbox,
+  FormControlLabel,
+  Link as MuiLink,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
 } from '@mui/material';
 import {
   Visibility,
@@ -20,21 +28,31 @@ import {
   Lock,
   Person,
   Gavel,
+  Security,
+  QrCode2,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import LanguageSelector from './LanguageSelector';
+import TermsOfService from './TermsOfService';
+import PrivacyPolicy from './PrivacyPolicy';
+import { authAPI } from '../services/api';
 
 const Login = () => {
   const { t } = useTranslation();
   const [tabValue, setTabValue] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
   
   const [loginForm, setLoginForm] = useState({
     email: '',
     password: '',
+    totp_code: '',
+    rememberMe: false,
   });
   
   const [registerForm, setRegisterForm] = useState({
@@ -42,44 +60,92 @@ const Login = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    acceptedTerms: false,
   });
+
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [resetStep, setResetStep] = useState('request');
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const { login, register } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('remembered_email');
+    if (savedEmail) {
+      setLoginForm(prev => ({ ...prev, email: savedEmail, rememberMe: true }));
+    }
+
+    const token = searchParams.get('reset_token');
+    if (token) {
+      setResetToken(token);
+      setShowPasswordReset(true);
+      setResetStep('confirm');
+    }
+  }, [searchParams]);
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
     setError('');
+    setSuccess('');
+    setRequires2FA(false);
   };
 
   const handleLoginChange = (e) => {
-    setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
+    const { name, value, checked, type } = e.target;
+    setLoginForm({ 
+      ...loginForm, 
+      [name]: type === 'checkbox' ? checked : value 
+    });
     setError('');
+    setSuccess('');
   };
 
   const handleRegisterChange = (e) => {
-    setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setRegisterForm({ ...registerForm, [e.target.name]: value });
     setError('');
+    setSuccess('');
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
-    const result = await login(loginForm.email, loginForm.password);
-    
+    const result = await login(
+      loginForm.email,
+      loginForm.password,
+      loginForm.totp_code || null
+    );
+
     if (result.success) {
+      if (loginForm.rememberMe) {
+        localStorage.setItem('remembered_email', loginForm.email);
+      } else {
+        localStorage.removeItem('remembered_email');
+      }
       navigate('/');
     } else {
+      if (result.requires2FA) {
+        setRequires2FA(true);
+      }
       setError(result.error);
     }
+    
     setLoading(false);
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     if (registerForm.password !== registerForm.confirmPassword) {
       setError(t('auth.passwordsNotMatch'));
@@ -106,6 +172,53 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handlePasswordResetRequest = async () => {
+    if (!resetEmail) {
+      setError(t('auth.emailRequired') || 'Email requerido');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      const result = await authAPI.requestPasswordReset(resetEmail);
+      setSuccess(result.message);
+      if (result.token) {
+        setResetToken(result.token);
+        setResetStep('confirm');
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Error al solicitar reset');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordResetConfirm = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      setError(t('auth.passwordMinLength') || 'Contraseña muy corta');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      await authAPI.confirmPasswordReset(resetToken, newPassword);
+      setSuccess(t('auth.passwordResetSuccess') || 'Contraseña actualizada');
+      setTimeout(() => {
+        setShowPasswordReset(false);
+        setResetStep('request');
+        setResetEmail('');
+        setResetToken('');
+        setNewPassword('');
+      }, 2000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Error al resetear contraseña');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -114,8 +227,13 @@ const Login = () => {
         alignItems: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         py: 4,
+        position: 'relative',
       }}
     >
+      <Box sx={{ position: 'absolute', top: 20, right: 20 }}>
+        <LanguageSelector />
+      </Box>
+
       <Container maxWidth="sm">
         <Paper
           elevation={24}
@@ -127,8 +245,10 @@ const Login = () => {
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Gavel sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              <Gavel sx={{ fontSize: 48, color: '#667eea', mr: 1 }} />
+            </Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: '#667eea', mb: 1 }}>
               {t('branding.appName')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -139,7 +259,7 @@ const Login = () => {
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
-            centered
+            variant="fullWidth"
             sx={{ mb: 3 }}
           >
             <Tab label={t('auth.login')} />
@@ -147,8 +267,14 @@ const Login = () => {
           </Tabs>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
               {error}
+            </Alert>
+          )}
+
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
+              {success}
             </Alert>
           )}
 
@@ -161,17 +287,17 @@ const Login = () => {
                 type="email"
                 value={loginForm.email}
                 onChange={handleLoginChange}
+                margin="normal"
                 required
-                sx={{ mb: 2 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color="action" />
+                      <Email />
                     </InputAdornment>
                   ),
                 }}
               />
-              
+
               <TextField
                 fullWidth
                 label={t('auth.password')}
@@ -179,12 +305,12 @@ const Login = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={loginForm.password}
                 onChange={handleLoginChange}
+                margin="normal"
                 required
-                sx={{ mb: 3 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" />
+                      <Lock />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -200,21 +326,68 @@ const Login = () => {
                 }}
               />
 
+              {requires2FA && (
+                <TextField
+                  fullWidth
+                  label={t('auth.2faCode') || 'Código 2FA'}
+                  name="totp_code"
+                  value={loginForm.totp_code}
+                  onChange={handleLoginChange}
+                  margin="normal"
+                  required
+                  placeholder="000000"
+                  inputProps={{ maxLength: 6, pattern: '[0-9]*' }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Security />
+                      </InputAdornment>
+                    ),
+                  }}
+                  helperText={t('auth.2faHelper') || 'Ingresa el código de tu app de autenticación'}
+                />
+              )}
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="rememberMe"
+                      checked={loginForm.rememberMe}
+                      onChange={handleLoginChange}
+                      color="primary"
+                    />
+                  }
+                  label={t('auth.rememberMe') || 'Recordarme'}
+                />
+                <MuiLink
+                  component="button"
+                  type="button"
+                  variant="body2"
+                  onClick={() => setShowPasswordReset(true)}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  {t('auth.forgotPassword') || '¿Olvidaste tu contraseña?'}
+                </MuiLink>
+              </Box>
+
               <Button
-                type="submit"
                 fullWidth
+                type="submit"
                 variant="contained"
                 size="large"
                 disabled={loading}
                 sx={{
+                  mt: 3,
+                  mb: 2,
                   py: 1.5,
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                    background: 'linear-gradient(135deg, #5568d3 0%, #6a3a8f 100%)',
                   },
                 }}
               >
-                {loading ? t('common.loading') : t('auth.loginButton')}
+                {loading ? <CircularProgress size={24} color="inherit" /> : t('auth.login')}
               </Button>
             </form>
           ) : (
@@ -225,17 +398,17 @@ const Login = () => {
                 name="name"
                 value={registerForm.name}
                 onChange={handleRegisterChange}
+                margin="normal"
                 required
-                sx={{ mb: 2 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Person color="action" />
+                      <Person />
                     </InputAdornment>
                   ),
                 }}
               />
-              
+
               <TextField
                 fullWidth
                 label={t('auth.email')}
@@ -243,17 +416,17 @@ const Login = () => {
                 type="email"
                 value={registerForm.email}
                 onChange={handleRegisterChange}
+                margin="normal"
                 required
-                sx={{ mb: 2 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Email color="action" />
+                      <Email />
                     </InputAdornment>
                   ),
                 }}
               />
-              
+
               <TextField
                 fullWidth
                 label={t('auth.password')}
@@ -261,12 +434,12 @@ const Login = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={registerForm.password}
                 onChange={handleRegisterChange}
+                margin="normal"
                 required
-                sx={{ mb: 2 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" />
+                      <Lock />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -281,7 +454,7 @@ const Login = () => {
                   ),
                 }}
               />
-              
+
               <TextField
                 fullWidth
                 label={t('auth.confirmPassword')}
@@ -289,51 +462,177 @@ const Login = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={registerForm.confirmPassword}
                 onChange={handleRegisterChange}
+                margin="normal"
                 required
-                sx={{ mb: 3 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Lock color="action" />
+                      <Lock />
                     </InputAdornment>
                   ),
                 }}
               />
 
+              {/* Terms and Privacy Consent */}
+              <Box sx={{ mt: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="acceptedTerms"
+                      checked={registerForm.acceptedTerms}
+                      onChange={handleRegisterChange}
+                      color="primary"
+                      required
+                    />
+                  }
+                  label={
+                    <Typography variant="body2">
+                      {t('auth.acceptTerms1', 'Acepto los')}{' '}
+                      <MuiLink
+                        component="button"
+                        type="button"
+                        variant="body2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowTerms(true);
+                        }}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {t('auth.termsOfService', 'Términos y Condiciones')}
+                      </MuiLink>
+                      {' '}{t('auth.and', 'y la')}{' '}
+                      <MuiLink
+                        component="button"
+                        type="button"
+                        variant="body2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowPrivacy(true);
+                        }}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        {t('auth.privacyPolicy', 'Política de Privacidad')}
+                      </MuiLink>
+                    </Typography>
+                  }
+                />
+              </Box>
+
               <Button
-                type="submit"
                 fullWidth
+                type="submit"
                 variant="contained"
                 size="large"
-                disabled={loading}
+                disabled={loading || !registerForm.acceptedTerms}
                 sx={{
+                  mt: 3,
+                  mb: 2,
                   py: 1.5,
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                    background: 'linear-gradient(135deg, #5568d3 0%, #6a3a8f 100%)',
                   },
                 }}
               >
-                {loading ? t('common.loading') : t('auth.registerButton')}
+                {loading ? <CircularProgress size={24} color="inherit" /> : t('auth.register')}
               </Button>
             </form>
           )}
-
-          <Divider sx={{ my: 3 }} />
-
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="caption" color="text.secondary">
-              {t('auth.demoCredentials')}:
-            </Typography>
-            <Typography variant="caption" display="block" color="text.secondary" sx={{ direction: 'ltr' }}>
-              admin@justicia.ma | juez@justicia.ma | abogado@justicia.ma
-            </Typography>
-            <Typography variant="caption" display="block" color="text.secondary">
-              {t('auth.password')}: {t('auth.demoPasswordFormat')}
-            </Typography>
-          </Box>
         </Paper>
       </Container>
+
+      <Dialog
+        open={showPasswordReset}
+        onClose={() => !loading && setShowPasswordReset(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {resetStep === 'request' 
+            ? (t('auth.resetPassword') || 'Resetear Contraseña')
+            : (t('auth.newPassword') || 'Nueva Contraseña')
+          }
+        </DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
+              {success}
+            </Alert>
+          )}
+
+          {resetStep === 'request' ? (
+            <TextField
+              fullWidth
+              label={t('auth.email')}
+              type="email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              margin="normal"
+              required
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Email />
+                  </InputAdornment>
+                ),
+              }}
+              helperText={t('auth.resetEmailHelper') || 'Ingresa tu email para recibir instrucciones'}
+            />
+          ) : (
+            <TextField
+              fullWidth
+              label={t('auth.newPassword')}
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              margin="normal"
+              required
+              inputProps={{ minLength: 6 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock />
+                  </InputAdornment>
+                ),
+              }}
+              helperText={t('auth.passwordMinLength') || 'Mínimo 6 caracteres'}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowPasswordReset(false)} disabled={loading}>
+            {t('common.cancel') || 'Cancelar'}
+          </Button>
+          <Button
+            onClick={resetStep === 'request' ? handlePasswordResetRequest : handlePasswordResetConfirm}
+            variant="contained"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={20} /> : (t('common.confirm') || 'Confirmar')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Terms of Service Dialog */}
+      <TermsOfService 
+        open={showTerms} 
+        onClose={() => setShowTerms(false)}
+        onAccept={() => {
+          setRegisterForm({ ...registerForm, acceptedTerms: true });
+          setShowTerms(false);
+        }}
+      />
+
+      {/* Privacy Policy Dialog */}
+      <PrivacyPolicy 
+        open={showPrivacy} 
+        onClose={() => setShowPrivacy(false)}
+      />
     </Box>
   );
 };

@@ -22,19 +22,19 @@ services:
   app1:
     build: ./backend
     environment:
-      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
-      - REDIS_URL=redis://redis:6379/0
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://elasticsearch:9200}
+      - SECRET_KEY=${SECRET_KEY}
       - SERVER_ID=app-1
-      - DEBUG=false
-      - ENVIRONMENT=production
-      - HSM_TYPE=software_fallback
-      - OCR_LANGUAGES=ara+fra+spa
-      - DEFAULT_LANGUAGE=ar
-      - MOROCCO_TIMEZONE=Africa/Casablanca
-      - ENABLE_AUDIT_LOGGING=true
-      - ENABLE_MONITORING=true
+      - DEBUG=${DEBUG:-false}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - HSM_TYPE=${HSM_TYPE:-software_fallback}
+      - OCR_LANGUAGES=${OCR_LANGUAGES:-ara+fra+spa}
+      - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE:-ar}
+      - MOROCCO_TIMEZONE=${MOROCCO_TIMEZONE:-Africa/Casablanca}
+      - ENABLE_AUDIT_LOGGING=${ENABLE_AUDIT_LOGGING:-true}
+      - ENABLE_MONITORING=${ENABLE_MONITORING:-true}
     depends_on:
       - db
       - redis
@@ -62,19 +62,19 @@ services:
   app2:
     build: ./backend
     environment:
-      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
-      - REDIS_URL=redis://redis:6379/0
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://elasticsearch:9200}
+      - SECRET_KEY=${SECRET_KEY}
       - SERVER_ID=app-2
-      - DEBUG=false
-      - ENVIRONMENT=production
-      - HSM_TYPE=software_fallback
-      - OCR_LANGUAGES=ara+fra+spa
-      - DEFAULT_LANGUAGE=ar
-      - MOROCCO_TIMEZONE=Africa/Casablanca
-      - ENABLE_AUDIT_LOGGING=true
-      - ENABLE_MONITORING=true
+      - DEBUG=${DEBUG:-false}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - HSM_TYPE=${HSM_TYPE:-software_fallback}
+      - OCR_LANGUAGES=${OCR_LANGUAGES:-ara+fra+spa}
+      - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE:-ar}
+      - MOROCCO_TIMEZONE=${MOROCCO_TIMEZONE:-Africa/Casablanca}
+      - ENABLE_AUDIT_LOGGING=${ENABLE_AUDIT_LOGGING:-true}
+      - ENABLE_MONITORING=${ENABLE_MONITORING:-true}
     depends_on:
       - db
       - redis
@@ -102,19 +102,19 @@ services:
   app3:
     build: ./backend
     environment:
-      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
-      - REDIS_URL=redis://redis:6379/0
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL:-http://elasticsearch:9200}
+      - SECRET_KEY=${SECRET_KEY}
       - SERVER_ID=app-3
-      - DEBUG=false
-      - ENVIRONMENT=production
-      - HSM_TYPE=software_fallback
-      - OCR_LANGUAGES=ara+fra+spa
-      - DEFAULT_LANGUAGE=ar
-      - MOROCCO_TIMEZONE=Africa/Casablanca
-      - ENABLE_AUDIT_LOGGING=true
-      - ENABLE_MONITORING=true
+      - DEBUG=${DEBUG:-false}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - HSM_TYPE=${HSM_TYPE:-software_fallback}
+      - OCR_LANGUAGES=${OCR_LANGUAGES:-ara+fra+spa}
+      - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE:-ar}
+      - MOROCCO_TIMEZONE=${MOROCCO_TIMEZONE:-Africa/Casablanca}
+      - ENABLE_AUDIT_LOGGING=${ENABLE_AUDIT_LOGGING:-true}
+      - ENABLE_MONITORING=${ENABLE_MONITORING:-true}
     depends_on:
       - db
       - redis
@@ -143,9 +143,9 @@ services:
   db:
     image: postgres:15
     environment:
-      - POSTGRES_DB=justicia_db
-      - POSTGRES_USER=justicia
-      - POSTGRES_PASSWORD=JusticiaPassword2024!
+      - POSTGRES_DB=${POSTGRES_DB:-justicia_db}
+      - POSTGRES_USER=${POSTGRES_USER:-justicia}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=en_US.UTF-8
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -236,11 +236,11 @@ services:
     build: ./backend
     command: celery -A backend.app.celery.celery worker -Q cpu_intensive --concurrency=2 --loglevel=info --max-tasks-per-child=100
     environment:
-      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      - SECRET_KEY=${SECRET_KEY}
       - OCR_LANGUAGES=ara+fra+spa
       - TESSERACT_CMD=/usr/bin/tesseract
     depends_on:
@@ -266,11 +266,11 @@ services:
     build: ./backend
     command: celery -A backend.app.celery.celery worker -Q io_bound --concurrency=4 --loglevel=info --max-tasks-per-child=200
     environment:
-      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       - db
       - redis
@@ -294,11 +294,11 @@ services:
     build: ./backend
     command: celery -A backend.app.celery.celery worker -Q hsm_operations --concurrency=1 --loglevel=info --max-tasks-per-child=50
     environment:
-      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      - SECRET_KEY=${SECRET_KEY}
       - HSM_TYPE=software_fallback
       # For production HSM, add:
       # - HSM_LIBRARY_PATH=/usr/lib/hsm/libhsm.so
@@ -327,11 +327,11 @@ services:
     build: ./backend
     command: celery -A backend.app.celery.celery beat --loglevel=info
     environment:
-      - DATABASE_URL=postgresql://justicia:JusticiaPassword2024!@db:5432/justicia_db
-      - REDIS_URL=redis://redis:6379/0
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - SECRET_KEY=your-super-secret-key-change-in-production-32chars-minimum
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       - db
       - redis
@@ -375,8 +375,8 @@ services:
     build: ./backend
     command: celery -A backend.app.celery.celery flower --port=5555
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
     ports:
       - "5555:5555"
     depends_on:
@@ -391,7 +391,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
     volumes:
       - grafana_data:/var/lib/grafana
     restart: unless-stopped

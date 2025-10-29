@@ -1,9 +1,10 @@
-modules = ["bash", "nodejs-20", "python-3.11"]
+modules = ["bash", "nodejs-20", "python-3.11", "postgresql-16"]
 [agent]
 expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["freetype", "gumbo", "harfbuzz", "jbig2dec", "libjpeg_turbo", "mupdf", "openjpeg", "poppler", "swig", "tesseract", "xcbuild"]
 
 [workflows]
 runButton = "Project"
@@ -53,7 +54,19 @@ externalPort = 80
 localPort = 8000
 externalPort = 8000
 
+[[ports]]
+localPort = 34567
+externalPort = 3000
+
+[[ports]]
+localPort = 36317
+externalPort = 3002
+
+[[ports]]
+localPort = 41355
+externalPort = 3001
+
 [deployment]
 deploymentTarget = "autoscale"
-run = ["npm", "run", "preview", "--prefix", "frontend", "--", "--host", "0.0.0.0", "--port", "5000"]
-build = ["npm", "run", "build", "--prefix", "frontend"]
+run = ["bash", "-c", "cd backend && gunicorn app.main:app --bind 0.0.0.0:5000 --workers 4 --worker-class uvicorn.workers.UvicornWorker --timeout 120 --access-logfile - --error-logfile -"]
+build = ["bash", "-c", "cd frontend && npm run build && cd ../backend && pip install -r requirements.txt"]

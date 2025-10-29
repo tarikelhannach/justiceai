@@ -12,6 +12,9 @@ from ..config import settings
 
 logger = logging.getLogger(__name__)
 
+# Fallback en memoria cuando Redis no está disponible
+_password_reset_tokens = {}
+
 def generate_verification_code(length: int = 6) -> str:
     """Generar código de verificación alfanumérico"""
     try:
@@ -119,20 +122,25 @@ def generate_password_reset_token(email: str) -> str:
     """Generar token para reset de contraseña"""
     try:
         token = secrets.token_urlsafe(32)
-        
-        # Guardar token con expiración
-        redis_client = redis.from_url(settings.redis_url)
         data = {
             "email": email,
             "created_at": datetime.utcnow().isoformat(),
             "expires_at": (datetime.utcnow() + timedelta(hours=1)).isoformat()
         }
         
-        redis_client.setex(
-            f"password_reset:{token}",
-            3600,  # 1 hora
-            json.dumps(data)
-        )
+        try:
+            # Intentar guardar en Redis
+            redis_client = redis.from_url(settings.redis_url)
+            redis_client.setex(
+                f"password_reset:{token}",
+                3600,  # 1 hora
+                json.dumps(data)
+            )
+            logger.info(f"Password reset token saved in Redis for {email}")
+        except Exception as redis_error:
+            # Fallback a memoria
+            logger.warning(f"Redis unavailable, using in-memory storage: {redis_error}")
+            _password_reset_tokens[token] = data
         
         logger.info(f"Password reset token generated for {email}")
         return token
@@ -144,19 +152,39 @@ def generate_password_reset_token(email: str) -> str:
 def verify_password_reset_token(token: str) -> Optional[str]:
     """Verificar token de reset de contraseña"""
     try:
-        redis_client = redis.from_url(settings.redis_url)
+        data = None
         
-        stored_data = redis_client.get(f"password_reset:{token}")
-        if not stored_data:
+        # Intentar obtener de Redis primero
+        try:
+            redis_client = redis.from_url(settings.redis_url)
+            stored_data = redis_client.get(f"password_reset:{token}")
+            if stored_data:
+                data = json.loads(stored_data)
+        except Exception as redis_error:
+            logger.warning(f"Redis error: {redis_error}")
+        
+        # Si no está en Redis, buscar en memoria
+        if not data:
+            data = _password_reset_tokens.get(token)
+        
+        if not data:
             return None
         
-        data = json.loads(stored_data)
         email = data.get("email")
         expires_at = datetime.fromisoformat(data.get("expires_at"))
         
         # Verificar expiración
         if datetime.utcnow() > expires_at:
-            redis_client.delete(f"password_reset:{token}")
+            # Limpiar de ambos lugares
+            try:
+                redis_client = redis.from_url(settings.redis_url)
+                redis_client.delete(f"password_reset:{token}")
+            except:
+                pass
+            
+            if token in _password_reset_tokens:
+                del _password_reset_tokens[token]
+            
             return None
         
         return email
@@ -166,11 +194,20 @@ def verify_password_reset_token(token: str) -> Optional[str]:
         return None
 
 def invalidate_password_reset_token(token: str) -> bool:
-    """Invalidar token de reset de contraseña"""
+    """Invalidar token de reset de contraseña de AMBOS lugares"""
     try:
-        redis_client = redis.from_url(settings.redis_url)
-        redis_client.delete(f"password_reset:{token}")
-        logger.info(f"Password reset token invalidated: {token}")
+        # Limpiar de Redis
+        try:
+            redis_client = redis.from_url(settings.redis_url)
+            redis_client.delete(f"password_reset:{token}")
+        except Exception as redis_error:
+            logger.warning(f"Redis error during invalidation: {redis_error}")
+        
+        # Limpiar de memoria SIEMPRE
+        if token in _password_reset_tokens:
+            del _password_reset_tokens[token]
+        
+        logger.info(f"Password reset token invalidated from both stores: {token}")
         return True
     except Exception as e:
         logger.error(f"Error invalidating password reset token: {e}")

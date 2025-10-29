@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Drawer,
@@ -16,6 +16,8 @@ import {
   useTheme,
   alpha,
   Chip,
+  Breadcrumbs,
+  Link,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,11 +29,15 @@ import {
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
   ExitToApp as LogoutIcon,
+  Assessment as AuditIcon,
+  NavigateNext as NavigateNextIcon,
+  Home as HomeIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from './LanguageSelector';
+import SkipNavigation from './SkipNavigation';
 
 const drawerWidth = 280;
 
@@ -69,13 +75,54 @@ const Layout = ({ children, onToggleTheme, mode }) => {
     setMobileOpen(!mobileOpen);
   };
 
-  const menuItems = [
-    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/' },
-    { text: t('navigation.cases'), icon: <GavelIcon />, path: '/casos' },
-    { text: t('navigation.documents'), icon: <DescriptionIcon />, path: '/documentos' },
-    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/usuarios' },
-    { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/configuracion' },
+  const allMenuItems = [
+    { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
+    { text: t('navigation.cases'), icon: <GavelIcon />, path: '/casos', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
+    { text: t('navigation.documents'), icon: <DescriptionIcon />, path: '/documentos', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
+    { text: t('navigation.users'), icon: <PeopleIcon />, path: '/usuarios', roles: ['admin', 'clerk'] },
+    { text: t('navigation.audit'), icon: <AuditIcon />, path: '/auditoria', roles: ['admin', 'clerk'] },
+    { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/configuracion', roles: ['admin', 'judge', 'lawyer', 'clerk', 'citizen'] },
   ];
+
+  const menuItems = allMenuItems.filter(item => item.roles.includes(user?.role));
+
+  const breadcrumbs = useMemo(() => {
+    const pathnames = location.pathname.split('/').filter((x) => x);
+    
+    const routes = {
+      '': { label: t('navigation.dashboard'), icon: <HomeIcon sx={{ fontSize: 20 }} /> },
+      'casos': { label: t('navigation.cases'), icon: <GavelIcon sx={{ fontSize: 20 }} /> },
+      'documentos': { label: t('navigation.documents'), icon: <DescriptionIcon sx={{ fontSize: 20 }} /> },
+      'usuarios': { label: t('navigation.users'), icon: <PeopleIcon sx={{ fontSize: 20 }} /> },
+      'auditoria': { label: t('navigation.audit'), icon: <AuditIcon sx={{ fontSize: 20 }} /> },
+      'configuracion': { label: t('navigation.settings'), icon: <SettingsIcon sx={{ fontSize: 20 }} /> },
+    };
+
+    const items = [
+      { 
+        label: routes[''].label, 
+        icon: routes[''].icon, 
+        path: '/', 
+        isHome: true 
+      }
+    ];
+
+    let currentPath = '';
+    pathnames.forEach((pathname) => {
+      currentPath += `/${pathname}`;
+      const route = routes[pathname];
+      if (route) {
+        items.push({
+          label: route.label,
+          icon: route.icon,
+          path: currentPath,
+          isHome: false
+        });
+      }
+    });
+
+    return items;
+  }, [location.pathname, t]);
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -209,6 +256,9 @@ const Layout = ({ children, onToggleTheme, mode }) => {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Skip Navigation for Accessibility */}
+      <SkipNavigation />
+      
       {/* AppBar */}
       <AppBar
         position="fixed"
@@ -226,7 +276,7 @@ const Layout = ({ children, onToggleTheme, mode }) => {
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
+            aria-label={mobileOpen ? t('a11y.closeMenu') : t('a11y.openMenu')}
             edge="start"
             onClick={handleDrawerToggle}
             sx={{ 
@@ -240,9 +290,14 @@ const Layout = ({ children, onToggleTheme, mode }) => {
             {t('branding.appName')}
           </Typography>
           <LanguageSelector />
-          <IconButton onClick={onToggleTheme} color="inherit" sx={{ 
-            ...(isRtl ? { mr: 1 } : { ml: 1 })
-          }}>
+          <IconButton 
+            onClick={onToggleTheme} 
+            color="inherit" 
+            aria-label={t('a11y.toggleTheme')}
+            sx={{ 
+              ...(isRtl ? { mr: 1 } : { ml: 1 })
+            }}
+          >
             {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
         </Toolbar>
@@ -293,16 +348,81 @@ const Layout = ({ children, onToggleTheme, mode }) => {
 
       {/* Contenido Principal */}
       <Box
+        id="main-content"
         component="main"
+        tabIndex={-1}
         sx={{
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           bgcolor: theme.palette.background.default,
           minHeight: '100vh',
+          '&:focus': {
+            outline: 'none',
+          },
         }}
       >
         <Toolbar />
+        
+        {/* Breadcrumb Navigation */}
+        {breadcrumbs.length > 1 && (
+          <Box sx={{ mb: 3, mt: 1 }}>
+            <Breadcrumbs
+              separator={<NavigateNextIcon fontSize="small" />}
+              aria-label="breadcrumb"
+              sx={{
+                '& .MuiBreadcrumbs-separator': {
+                  ...(theme.direction === 'rtl' ? { transform: 'rotate(180deg)' } : {})
+                }
+              }}
+            >
+              {breadcrumbs.map((item, index) => {
+                const isLast = index === breadcrumbs.length - 1;
+                
+                return isLast ? (
+                  <Box
+                    key={item.path}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      color: 'text.primary',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {item.icon}
+                    <Typography color="text.primary" fontSize="0.875rem" fontWeight={600}>
+                      {item.label}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Link
+                    key={item.path}
+                    underline="hover"
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      color: 'text.secondary',
+                      cursor: 'pointer',
+                      transition: 'color 0.2s',
+                      '&:hover': {
+                        color: 'primary.main',
+                      },
+                    }}
+                    onClick={() => navigate(item.path)}
+                  >
+                    {item.icon}
+                    <Typography fontSize="0.875rem">
+                      {item.label}
+                    </Typography>
+                  </Link>
+                );
+              })}
+            </Breadcrumbs>
+          </Box>
+        )}
+        
         {children}
       </Box>
     </Box>

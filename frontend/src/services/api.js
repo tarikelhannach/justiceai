@@ -40,6 +40,11 @@ export const authAPI = {
     return response.data;
   },
   
+  loginWith2FA: async (email, password, totp_code = null) => {
+    const response = await api.post('/auth/login-2fa', { email, password, totp_code });
+    return response.data;
+  },
+  
   register: async (email, name, password, role = 'citizen') => {
     const response = await api.post('/auth/register', { email, name, password, role });
     return response.data;
@@ -52,6 +57,31 @@ export const authAPI = {
   
   logout: async () => {
     const response = await api.post('/auth/logout');
+    return response.data;
+  },
+
+  enable2FA: async () => {
+    const response = await api.post('/auth/2fa/enable');
+    return response.data;
+  },
+
+  verify2FA: async (code) => {
+    const response = await api.post('/auth/2fa/verify', { code });
+    return response.data;
+  },
+
+  disable2FA: async (code) => {
+    const response = await api.post('/auth/2fa/disable', { code });
+    return response.data;
+  },
+
+  requestPasswordReset: async (email) => {
+    const response = await api.post('/auth/password/reset-request', { email });
+    return response.data;
+  },
+
+  confirmPasswordReset: async (token, new_password) => {
+    const response = await api.post('/auth/password/reset-confirm', { token, new_password });
     return response.data;
   },
 };

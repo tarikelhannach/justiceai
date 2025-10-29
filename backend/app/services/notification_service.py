@@ -9,7 +9,7 @@ from datetime import datetime
 import asyncio
 
 from ..config import settings
-from ..models import Notification, User
+from ..models import User
 
 logger = logging.getLogger(__name__)
 

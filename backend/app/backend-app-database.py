@@ -7,10 +7,38 @@ from sqlalchemy.pool import QueuePool
 from contextlib import contextmanager
 import logging
 import time
+import re
 
 from .config import settings, get_database_config
 
 logger = logging.getLogger(__name__)
+
+# Whitelist de tablas permitidas para operaciones dinámicas
+ALLOWED_TABLES = {
+    'users', 'case_files', 'documents', 'audit_logs', 'notifications'
+}
+
+def validate_table_name(table_name: str) -> str:
+    """
+    Valida y retorna un nombre de tabla seguro desde una whitelist.
+    
+    Args:
+        table_name: Nombre de tabla a validar
+        
+    Returns:
+        El nombre de tabla validado y escapado
+        
+    Raises:
+        ValueError: Si el nombre de tabla no está en la whitelist
+    """
+    if table_name not in ALLOWED_TABLES:
+        raise ValueError(f"Table name '{table_name}' not in whitelist")
+    
+    # Validación adicional: solo alfanuméricos y guiones bajos
+    if not re.match(r'^[a-z_]+$', table_name):
+        raise ValueError(f"Invalid table name format: '{table_name}'")
+    
+    return table_name
 
 # Configuración del engine de base de datos
 engine_config = get_database_config()
@@ -111,9 +139,8 @@ def get_db_session():
 def check_db_health() -> bool:
     """Verificar salud de la conexión a base de datos"""
     try:
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
         return True
     except Exception as e:
         logger.error(f"Database health check failed: {e}")
@@ -216,7 +243,10 @@ class DatabaseManager:
             # Optimizar tablas principales
             main_tables = ['case_files', 'documents', 'users', 'audit_logs']
             for table in main_tables:
-                db.execute(text(f"VACUUM ANALYZE {table}"))
+                # Validar tabla contra whitelist antes de construir SQL
+                safe_table = validate_table_name(table)
+                sql = f'VACUUM ANALYZE "{safe_table}"'
+                db.execute(text(sql))
             
             db.commit()
             logger.info("Database optimization completed")
@@ -234,7 +264,10 @@ class DatabaseManager:
             # Contar registros por tabla
             tables = ['users', 'case_files', 'documents', 'audit_logs', 'notifications']
             for table in tables:
-                result = db.execute(text(f"SELECT COUNT(*) FROM {table}")).fetchone()
+                # Validar tabla contra whitelist antes de construir SQL
+                safe_table = validate_table_name(table)
+                sql = f'SELECT COUNT(*) FROM "{safe_table}"'
+                result = db.execute(text(sql)).fetchone()
                 stats[f"{table}_count"] = result[0] if result else 0
             
             # Tamaño de la base de datos

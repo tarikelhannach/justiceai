@@ -11,29 +11,9 @@ import CasesList from './components/CasesList';
 import DocumentsList from './components/DocumentsList';
 import UsersList from './components/UsersList';
 import Settings from './components/Settings';
-import { CircularProgress, Box } from '@mui/material';
+import Audit from './pages/Audit';
+import PrivateRoute from './components/PrivateRoute';
 import { useTranslation } from 'react-i18next';
-
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  return isAuthenticated ? children : <Navigate to="/login" />;
-};
 
 function AppContent() {
   const { i18n } = useTranslation();
@@ -73,51 +53,61 @@ function AppContent() {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            <PrivateRoute>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
                 <RoleDashboard />
               </Layout>
-            </ProtectedRoute>
+            </PrivateRoute>
           }
         />
         <Route
           path="/casos"
           element={
-            <ProtectedRoute>
+            <PrivateRoute>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
                 <CasesList />
               </Layout>
-            </ProtectedRoute>
+            </PrivateRoute>
           }
         />
         <Route
           path="/documentos"
           element={
-            <ProtectedRoute>
+            <PrivateRoute>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
                 <DocumentsList />
               </Layout>
-            </ProtectedRoute>
+            </PrivateRoute>
           }
         />
         <Route
           path="/usuarios"
           element={
-            <ProtectedRoute>
+            <PrivateRoute requiredRoles={['admin', 'clerk']}>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
                 <UsersList />
               </Layout>
-            </ProtectedRoute>
+            </PrivateRoute>
           }
         />
         <Route
           path="/configuracion"
           element={
-            <ProtectedRoute>
+            <PrivateRoute>
               <Layout onToggleTheme={toggleTheme} mode={mode}>
                 <Settings />
               </Layout>
-            </ProtectedRoute>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/auditoria"
+          element={
+            <PrivateRoute requiredRoles={['admin', 'clerk']}>
+              <Layout onToggleTheme={toggleTheme} mode={mode}>
+                <Audit />
+              </Layout>
+            </PrivateRoute>
           }
         />
         <Route path="*" element={<Navigate to="/" />} />
