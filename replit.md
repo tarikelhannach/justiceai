@@ -1,7 +1,7 @@
 # Digital Judicial System - Morocco
 
 ## Recent Changes
-**October 29, 2025 - Frontend Migration to Vite**
+**October 29, 2025 - Frontend Migration to Vite & i18n Improvements**
 - **Complete Migration from Create React App to Vite**: Modernized frontend build system
   - Updated package.json: Removed react-scripts, added vite and @vitejs/plugin-react
   - Configured vite.config.js with JSX support for .js files (esbuild loader)
@@ -11,6 +11,12 @@
   - Removed duplicate Login.jsx file
   - Workflow now uses `npm run dev` command successfully
   - Preview working correctly with proper UTF-8 encoding
+
+- **Login Page i18n Enhancement**: Language selector now available on login page
+  - Added LanguageSelector component to login screen (top-right corner)
+  - Converted all login text to use i18n translations (ES/FR/AR)
+  - Users can now switch language before authentication
+  - Seamless language persistence across login and main app
 
 **October 14, 2025 - Enterprise Features Implementation**
 - **OCR Multi-Language Processing**: Tesseract OCR with Arabic/French/Spanish support for document digitization

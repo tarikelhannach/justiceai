@@ -24,10 +24,13 @@ import {
   QrCode,
   Email,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import LanguageSelector from './LanguageSelector';
 
 const Login = () => {
   const { login } = useAuth();
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
@@ -39,8 +42,8 @@ const Login = () => {
   const [error, setError] = useState('');
 
   const steps = [
-    'Credenciales',
-    'Autenticación de Dos Factores',
+    t('auth.email'),
+    t('auth.2faCode'),
   ];
 
   const handleInputChange = (field) => (event) => {
@@ -53,7 +56,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     if (!formData.email || !formData.password) {
-      setError('Por favor complete todos los campos');
+      setError(t('auth.emailRequired'));
       return;
     }
 
@@ -84,7 +87,7 @@ const Login = () => {
 
   const handle2FA = async () => {
     if (!formData.twoFactorCode) {
-      setError('Por favor ingrese el código de verificación');
+      setError(t('auth.2faHelper'));
       return;
     }
 
@@ -123,16 +126,16 @@ const Login = () => {
         return (
           <Box>
             <Typography variant="h4" gutterBottom align="center">
-              🏛️ Sistema Judicial Digital
+              🏛️ {t('dashboard.subtitle').replace(' 🇲🇦', '')}
             </Typography>
             <Typography variant="h6" gutterBottom align="center" color="textSecondary">
-              Reino de Marruecos
+              🇲🇦 Reino de Marruecos
             </Typography>
             
             <Box sx={{ mt: 3 }}>
               <TextField
                 fullWidth
-                label="Correo Electrónico"
+                label={t('auth.email')}
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange('email')}
@@ -148,7 +151,7 @@ const Login = () => {
               
               <TextField
                 fullWidth
-                label="Contraseña"
+                label={t('auth.password')}
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={handleInputChange('password')}
@@ -186,7 +189,7 @@ const Login = () => {
                 disabled={loading}
                 sx={{ mt: 3 }}
               >
-                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                {loading ? t('common.loading') : t('auth.loginButton')}
               </Button>
             </Box>
           </Box>
@@ -196,19 +199,18 @@ const Login = () => {
         return (
           <Box>
             <Typography variant="h5" gutterBottom align="center">
-              Autenticación de Dos Factores
+              {t('auth.2faCode')}
             </Typography>
             
             <Paper sx={{ p: 2, mt: 2, mb: 2 }}>
               <Typography variant="body2" color="textSecondary">
-                Por seguridad, se requiere verificación adicional. Ingrese el código de 6 dígitos 
-                de su aplicación autenticadora o el código SMS enviado a su teléfono.
+                {t('auth.2faHelper')}
               </Typography>
             </Paper>
             
             <TextField
               fullWidth
-              label="Código de Verificación"
+              label={t('auth.2faCode')}
               value={formData.twoFactorCode}
               onChange={handleInputChange('twoFactorCode')}
               margin="normal"
@@ -230,7 +232,7 @@ const Login = () => {
                 disabled={loading}
                 sx={{ flex: 1 }}
               >
-                Atrás
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="contained"
@@ -238,7 +240,7 @@ const Login = () => {
                 disabled={loading || !formData.twoFactorCode}
                 sx={{ flex: 1 }}
               >
-                {loading ? 'Verificando...' : 'Verificar'}
+                {loading ? t('common.loading') : t('auth.loginButton')}
               </Button>
             </Box>
             
@@ -264,8 +266,21 @@ const Login = () => {
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         p: 2,
+        position: 'relative',
       }}
     >
+      {/* Selector de idioma en la esquina superior derecha */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 1000,
+        }}
+      >
+        <LanguageSelector />
+      </Box>
+
       <Card sx={{ maxWidth: 500, width: '100%' }}>
         <CardContent sx={{ p: 4 }}>
           <Stepper activeStep={step} sx={{ mb: 3 }}>
@@ -282,7 +297,7 @@ const Login = () => {
           
           <Box sx={{ mt: 4, textAlign: 'center' }}>
             <Typography variant="body2" color="textSecondary">
-              ¿Problemas para acceder? Contacte al administrador del sistema
+              {t('auth.forgotPassword')}
             </Typography>
           </Box>
         </CardContent>
