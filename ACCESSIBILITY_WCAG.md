@@ -1,116 +1,116 @@
-# Accesibilidad WCAG 2.1 AA - Sistema Judicial Digital
+# WCAG 2.1 AA Accessibility - Digital Judicial System
 
-## Estado Actual: En Progreso
-**Objetivo**: Cumplimiento WCAG 2.1 Nivel AA para accesibilidad gubernamental
-
----
-
-## 1. Audit de Accesibilidad
-
-### ✅ **Implementado**
-
-#### **1.1 Perceivable (Perceptible)**
-- ✅ **RTL Support**: Layout completo para árabe
-- ✅ **Semantic HTML**: Uso de Material-UI con elementos semánticos
-- ✅ **Keyboard Navigation**: Componentes focusables
-- ✅ **Color Contrast**: Tema con paleta de colores accesible (light/dark)
-- ✅ **Breadcrumbs**: `aria-label="breadcrumb"` implementado
-
-#### **1.2 Operable (Operable)**
-- ✅ **Keyboard Accessible**: Todos los elementos interactivos accesibles por teclado
-- ✅ **Focus Management**: Dialogs atrapan focus
-- ✅ **Button Labels**: Botones con texto descriptivo
-
-#### **1.3 Understandable (Comprensible)**
-- ✅ **Multi-language**: ES/FR/AR con i18next
-- ✅ **Error Messages**: Mensajes claros con Alerts
-- ✅ **Form Labels**: Todos los campos etiquetados
-
-#### **1.4 Robust (Robusto)**
-- ✅ **Valid HTML**: React + Material-UI genera HTML válido
-- ✅ **ARIA Support**: Componentes MUI con ARIA built-in
+## Current Status: In Progress
+**Goal**: WCAG 2.1 Level AA compliance for government accessibility
 
 ---
 
-### ⚠️ **Issues Identificados** (Requieren Acción)
+## 1. Accessibility Audit
 
-#### **PRIORIDAD ALTA**
+### ✅ **Implemented**
+
+#### **1.1 Perceivable**
+- ✅ **RTL Support**: Complete layout for Arabic
+- ✅ **Semantic HTML**: Use of Material-UI with semantic elements
+- ✅ **Keyboard Navigation**: Focusable components
+- ✅ **Color Contrast**: Theme with accessible color palette (light/dark)
+- ✅ **Breadcrumbs**: `aria-label="breadcrumb"` implemented
+
+#### **1.2 Operable**
+- ✅ **Keyboard Accessible**: All interactive elements accessible by keyboard
+- ✅ **Focus Management**: Dialogs trap focus
+- ✅ **Button Labels**: Buttons with descriptive text
+
+#### **1.3 Understandable**
+- ✅ **Multi-language**: ES/FR/AR with i18next
+- ✅ **Error Messages**: Clear messages with Alerts
+- ✅ **Form Labels**: All fields labeled
+
+#### **1.4 Robust**
+- ✅ **Valid HTML**: React + Material-UI generates valid HTML
+- ✅ **ARIA Support**: MUI components with built-in ARIA
+
+---
+
+### ⚠️ **Identified Issues** (Require Action)
+
+#### **HIGH PRIORITY**
 
 1. **Skip Navigation** ❌
-   - **Issue**: No hay "Skip to main content" link
+   - **Issue**: No "Skip to main content" link
    - **WCAG**: 2.4.1 Bypass Blocks (A)
-   - **Impacto**: Usuarios de teclado deben tabular por todo el nav
-   - **Solución**: Agregar skip link invisible hasta focus
+   - **Impact**: Keyboard users must tab through entire nav
+   - **Solution**: Add invisible skip link until focus
 
-2. **ARIA Labels Faltantes** ❌
-   - **Issue**: IconButtons sin aria-label en varios componentes
+2. **Missing ARIA Labels** ❌
+   - **Issue**: IconButtons without aria-label in several components
    - **WCAG**: 4.1.2 Name, Role, Value (A)
-   - **Impacto**: Screen readers no pueden identificar función
-   - **Solución**: Agregar aria-label a todos los IconButton
+   - **Impact**: Screen readers cannot identify function
+   - **Solution**: Add aria-label to all IconButton
 
 3. **Focus Visible** ⚠️
-   - **Issue**: Focus outline podría ser más prominente
+   - **Issue**: Focus outline could be more prominent
    - **WCAG**: 2.4.7 Focus Visible (AA)
-   - **Impacto**: Usuarios de teclado pierden el foco
-   - **Solución**: Mejorar estilos de focus en theme
+   - **Impact**: Keyboard users lose focus
+   - **Solution**: Improve focus styles in theme
 
-4. **Contraste de Colores** ⚠️
-   - **Issue**: Algunos colores secundarios pueden no cumplir 4.5:1
+4. **Color Contrast** ⚠️
+   - **Issue**: Some secondary colors may not meet 4.5:1
    - **WCAG**: 1.4.3 Contrast (Minimum) (AA)
-   - **Impacto**: Dificulta lectura para baja visión
-   - **Solución**: Validar todos los colores con herramienta
+   - **Impact**: Difficult reading for low vision
+   - **Solution**: Validate all colors with tool
 
 5. **Form Validation** ⚠️
-   - **Issue**: Errores de formulario no anunciados a screen readers
+   - **Issue**: Form errors not announced to screen readers
    - **WCAG**: 3.3.1 Error Identification (A)
-   - **Impacto**: Screen readers no captan errores
-   - **Solución**: Agregar role="alert" a mensajes de error
+   - **Impact**: Screen readers don't catch errors
+   - **Solution**: Add role="alert" to error messages
 
-#### **PRIORIDAD MEDIA**
+#### **MEDIUM PRIORITY**
 
 6. **Heading Hierarchy** ⚠️
-   - **Issue**: Verificar jerarquía h1→h2→h3 en todas las páginas
+   - **Issue**: Verify h1→h2→h3 hierarchy on all pages
    - **WCAG**: 1.3.1 Info and Relationships (A)
-   - **Impacto**: Navegación con screen reader confusa
-   - **Solución**: Audit y corrección de headings
+   - **Impact**: Screen reader navigation confusing
+   - **Solution**: Audit and correct headings
 
-7. **Alt Text para Iconos** ⚠️
-   - **Issue**: Iconos decorativos vs funcionales no distinguidos
+7. **Alt Text for Icons** ⚠️
+   - **Issue**: Decorative vs functional icons not distinguished
    - **WCAG**: 1.1.1 Non-text Content (A)
-   - **Impacto**: Confusión en iconos significativos
-   - **Solución**: aria-hidden="true" en decorativos, labels en funcionales
+   - **Impact**: Confusion in meaningful icons
+   - **Solution**: aria-hidden="true" on decorative, labels on functional
 
 8. **Language Declaration** ⚠️
-   - **Issue**: Cambios de idioma no anunciados
+   - **Issue**: Language changes not announced
    - **WCAG**: 3.1.2 Language of Parts (AA)
-   - **Impacto**: Screen readers usan pronunciación incorrecta
-   - **Solución**: lang attribute dinámico en switches
+   - **Impact**: Screen readers use incorrect pronunciation
+   - **Solution**: Dynamic lang attribute on switches
 
 9. **Motion/Animation** ⚠️
-   - **Issue**: No respeta prefers-reduced-motion
-   - **WCAG**: 2.3.3 Animation from Interactions (AAA - deseable)
-   - **Impacto**: Puede causar mareos/náuseas
-   - **Solución**: Deshabilitar animaciones si prefers-reduced-motion
+   - **Issue**: Doesn't respect prefers-reduced-motion
+   - **WCAG**: 2.3.3 Animation from Interactions (AAA - desirable)
+   - **Impact**: Can cause dizziness/nausea
+   - **Solution**: Disable animations if prefers-reduced-motion
 
 10. **Touch Targets** ⚠️
-    - **Issue**: Algunos botones pueden ser < 44x44px
-    - **WCAG**: 2.5.5 Target Size (AAA - deseable)
-    - **Impacto**: Dificulta uso táctil
-    - **Solución**: Garantizar mínimo 44x44px en elementos táctiles
+    - **Issue**: Some buttons may be < 44x44px
+    - **WCAG**: 2.5.5 Target Size (AAA - desirable)
+    - **Impact**: Difficult touch use
+    - **Solution**: Ensure minimum 44x44px on touch elements
 
 ---
 
-## 2. Plan de Implementación
+## 2. Implementation Plan
 
-### **Fase 1: Fixes Críticos (ALTA PRIORIDAD)** ⏰ 30 min
+### **Phase 1: Critical Fixes (HIGH PRIORITY)** ⏰ 30 min
 
 - [ ] Skip Navigation Link
-- [ ] ARIA Labels en IconButtons
+- [ ] ARIA Labels on IconButtons
 - [ ] Focus Visible Improvements
 - [ ] Color Contrast Validation
 - [ ] Form Error Announcements
 
-### **Fase 2: Mejoras Importantes (MEDIA PRIORIDAD)** ⏰ 45 min
+### **Phase 2: Important Improvements (MEDIUM PRIORITY)** ⏰ 45 min
 
 - [ ] Heading Hierarchy Audit
 - [ ] Alt Text Strategy
@@ -118,7 +118,7 @@
 - [ ] Reduced Motion Support
 - [ ] Touch Target Sizes
 
-### **Fase 3: Testing y Validación** ⏰ 30 min
+### **Phase 3: Testing and Validation** ⏰ 30 min
 
 - [ ] Lighthouse Audit (Target: 90+)
 - [ ] axe DevTools Scan (0 violations)
@@ -128,29 +128,29 @@
 
 ---
 
-## 3. Herramientas de Testing
+## 3. Testing Tools
 
-### **Automáticas**
-- **Lighthouse**: Audit integrado Chrome DevTools
-- **axe DevTools**: Extension Chrome para testing detallado
+### **Automated**
+- **Lighthouse**: Chrome DevTools integrated audit
+- **axe DevTools**: Chrome extension for detailed testing
 - **WAVE**: Web Accessibility Evaluation Tool
 - **Color Contrast Analyzer**: Paciello Group
 
-### **Manuales**
+### **Manual**
 - **NVDA**: Screen reader (Windows)
 - **JAWS**: Screen reader (Windows) 
 - **VoiceOver**: Screen reader (macOS/iOS)
-- **Keyboard Only**: Navegación sin mouse
+- **Keyboard Only**: Navigation without mouse
 
-### **Simuladores**
+### **Simulators**
 - **Color Blind Simulator**: Vischeck, Chromatic Vision Simulator
 - **Low Vision**: Chrome Lens extension
 
 ---
 
-## 4. Checklist WCAG 2.1 AA
+## 4. WCAG 2.1 AA Checklist
 
-### **Nivel A (Mínimo)**
+### **Level A (Minimum)**
 
 #### **1. Perceivable**
 - [x] 1.1.1 Non-text Content
@@ -160,7 +160,7 @@
 - [x] 1.3.1 Info and Relationships
 - [x] 1.3.2 Meaningful Sequence
 - [x] 1.3.3 Sensory Characteristics
-- [ ] 1.4.1 Use of Color (⚠️ Pendiente validar)
+- [ ] 1.4.1 Use of Color (⚠️ Pending validation)
 - [x] 1.4.2 Audio Control (N/A)
 
 #### **2. Operable**
@@ -183,20 +183,20 @@
 - [x] 3.1.1 Language of Page
 - [x] 3.2.1 On Focus
 - [x] 3.2.2 On Input
-- [ ] 3.3.1 Error Identification (⚠️ Mejorar anuncios)
+- [ ] 3.3.1 Error Identification (⚠️ Improve announcements)
 - [x] 3.3.2 Labels or Instructions
 
 #### **4. Robust**
-- [ ] 4.1.1 Parsing (⚠️ Validar HTML)
+- [ ] 4.1.1 Parsing (⚠️ Validate HTML)
 - [ ] 4.1.2 Name, Role, Value (⚠️ ARIA labels)
 - [x] 4.1.3 Status Messages
 
-### **Nivel AA (Target Gubernamental)**
+### **Level AA (Government Target)**
 
 #### **1. Perceivable**
 - [ ] 1.2.4 Captions (Live) (N/A)
 - [ ] 1.2.5 Audio Description (N/A)
-- [ ] 1.4.3 Contrast (Minimum) (⚠️ Validar 4.5:1)
+- [ ] 1.4.3 Contrast (Minimum) (⚠️ Validate 4.5:1)
 - [x] 1.4.4 Resize Text
 - [x] 1.4.5 Images of Text (N/A)
 - [x] 1.4.10 Reflow
@@ -207,43 +207,43 @@
 #### **2. Operable**
 - [x] 2.4.5 Multiple Ways
 - [x] 2.4.6 Headings and Labels
-- [ ] 2.4.7 Focus Visible (⚠️ Mejorar)
+- [ ] 2.4.7 Focus Visible (⚠️ Improve)
 
 #### **3. Understandable**
-- [ ] 3.1.2 Language of Parts (⚠️ Agregar lang)
+- [ ] 3.1.2 Language of Parts (⚠️ Add lang)
 - [x] 3.2.3 Consistent Navigation
 - [x] 3.2.4 Consistent Identification
 - [x] 3.3.3 Error Suggestion
 - [x] 3.3.4 Error Prevention (Legal/Financial)
 
 #### **4. Robust**
-- [x] (Todos Nivel A cubiertos en Robust)
+- [x] (All Level A covered in Robust)
 
 ---
 
-## 5. Recursos y Referencias
+## 5. Resources and References
 
-### **Documentación Oficial**
+### **Official Documentation**
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 - [Material-UI Accessibility](https://mui.com/material-ui/guides/accessibility/)
 - [React Accessibility](https://react.dev/learn/accessibility)
 - [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
 
-### **Leyes y Regulaciones**
-- **Marruecos**: Pendiente normativa accesibilidad web
-- **Referencia**: EN 301 549 (Estándar Europeo)
+### **Laws and Regulations**
+- **Morocco**: Pending web accessibility regulations
+- **Reference**: EN 301 549 (European Standard)
 - **International**: UN Convention on Rights of Persons with Disabilities
 
 ---
 
-## 6. Próximos Pasos
+## 6. Next Steps
 
-1. ✅ Crear este documento de audit
-2. ⏳ Implementar Skip Navigation
-3. ⏳ Agregar ARIA labels faltantes
-4. ⏳ Mejorar focus visible
-5. ⏳ Validar contraste de colores
-6. ⏳ Testing con Lighthouse
-7. ⏳ Testing con screen readers
+1. ✅ Create this audit document
+2. ⏳ Implement Skip Navigation
+3. ⏳ Add missing ARIA labels
+4. ⏳ Improve focus visible
+5. ⏳ Validate color contrast
+6. ⏳ Testing with Lighthouse
+7. ⏳ Testing with screen readers
 
-**Meta**: Lighthouse Accessibility Score **95+** antes de producción
+**Goal**: Lighthouse Accessibility Score **95+** before production
