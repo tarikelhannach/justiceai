@@ -1,0 +1,116 @@
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+	modified:   .env.example
+	modified:   .replit
+	new file:   ACCESSIBILITY_WCAG.md
+	new file:   COMPLIANCE_MOROCCO.md
+	new file:   DEPLOYMENT.md
+	new file:   OPERATIONAL_MANUAL.md
+	modified:   README.md
+	new file:   SECURITY_AND_ARCHITECTURE_AUDIT.md
+	new file:   WCAG_2.1_AA_COMPLIANCE_REPORT.md
+	new file:   attached_assets/Pasted--JusticeAI-Sistema-Judicial-Digital-Marruecos-An-lisis-Profesional-Debuggeo-Completo--1760398697628_1760398697629.txt
+	new file:   backend/.coveragerc
+	new file:   backend/.flake8
+	new file:   backend/.pre-commit-config.yaml
+	new file:   backend/CODE_QUALITY.md
+	new file:   backend/TESTING.md
+	deleted:    backend/app/__pycache__/__init__.cpython-39.pyc
+	deleted:    backend/app/__pycache__/config.cpython-39.pyc
+	deleted:    backend/app/auth/__pycache__/__init__.cpython-39.pyc
+	deleted:    backend/app/auth/__pycache__/utils.cpython-39.pyc
+	modified:   backend/app/auth/jwt.py
+	modified:   backend/app/auth/utils.py
+	modified:   backend/app/backend-app-database.py
+	new file:   backend/app/core/__init__.py
+	new file:   backend/app/core/cache.py
+	modified:   backend/app/database.py
+	modified:   backend/app/main.py
+	new file:   backend/app/middleware/rate_limit.py
+	modified:   backend/app/models.py
+	new file:   backend/app/routes/audit.py
+	modified:   backend/app/routes/auth.py
+	modified:   backend/app/routes/cases.py
+	modified:   backend/app/routes/documents.py
+	modified:   backend/app/routes/schemas.py
+	new file:   backend/app/routes/search.py
+	new file:   backend/app/routes/signatures.py
+	modified:   backend/app/services/__init__.py
+	new file:   backend/app/services/elasticsearch_service.py
+	modified:   backend/app/services/notification_service.py
+	new file:   backend/app/services/ocr_service.py
+	new file:   backend/app/tasks/__init__.py
+	new file:   backend/app/tasks/celery_app.py
+	new file:   backend/app/tasks/ocr_tasks.py
+	new file:   backend/coverage.xml
+	new file:   backend/format.sh
+	new file:   backend/lint.sh
+	new file:   backend/migrations/001_add_ocr_fields.sql
+	new file:   backend/pyproject.toml
+	new file:   backend/pytest.ini
+	new file:   backend/requirements-dev.txt
+	modified:   backend/requirements.txt
+	new file:   backend/run_performance_tests.sh
+	new file:   backend/run_tests.sh
+	deleted:    backend/tests/__pycache__/__init__.cpython-39.pyc
+	deleted:    backend/tests/__pycache__/conftest.cpython-39-pytest-7.3.1.pyc
+	new file:   backend/tests/api/__init__.py
+	new file:   backend/tests/api/test_api_auth.py
+	new file:   backend/tests/api/test_api_cases_rbac.py
+	new file:   backend/tests/api/test_api_documents_rbac.py
+	new file:   backend/tests/api/test_api_users_rbac.py
+	modified:   backend/tests/conftest.py
+	new file:   backend/tests/integration/__init__.py
+	new file:   backend/tests/integration/test_database.py
+	new file:   backend/tests/integration/test_elasticsearch.py
+	new file:   backend/tests/integration/test_redis.py
+	new file:   backend/tests/performance/README.md
+	new file:   backend/tests/performance/__init__.py
+	new file:   backend/tests/performance/locustfile.py
+	new file:   backend/tests/performance/run_load_tests.sh
+	new file:   backend/tests/security/__init__.py
+	new file:   backend/tests/security/test_rate_limiting.py
+	new file:   backend/tests/security/test_security.py
+	new file:   backend/tests/security/test_security_rbac.py
+	deleted:    backend/tests/unit/__pycache__/test_auth.cpython-39-pytest-7.3.1.pyc
+	new file:   backend/tests/unit/test_cases.py
+	new file:   backend/tests/unit/test_documents.py
+	new file:   backend/tests/unit/test_users.py
+	modified:   docker-compose.yml
+	modified:   frontend/src/App.jsx
+	modified:   frontend/src/components/Layout.jsx
+	modified:   frontend/src/components/Login.jsx
+	new file:   frontend/src/components/PrivacyPolicy.jsx
+	new file:   frontend/src/components/PrivateRoute.jsx
+	new file:   frontend/src/components/SkipNavigation.jsx
+	new file:   frontend/src/components/TermsOfService.jsx
+	modified:   frontend/src/context/AuthContext.jsx
+	modified:   frontend/src/i18n/locales/ar.json
+	modified:   frontend/src/i18n/locales/es.json
+	modified:   frontend/src/i18n/locales/fr.json
+	new file:   frontend/src/pages/Audit.jsx
+	modified:   frontend/src/services/api.js
+	modified:   frontend/src/theme.js
+	modified:   frontend/vite.config.js
+	modified:   replit.md
+	new file:   scripts/README.md
+	new file:   scripts/backup.sh
+	new file:   scripts/restore.sh
+	new file:   scripts/setup-cron.sh
+
+Unmerged paths:
+  (use "git add/rm <file>..." as appropriate to mark resolution)
+	deleted by them: backend/app/__pycache__/database.cpython-39.pyc
+	deleted by them: backend/app/__pycache__/main.cpython-39.pyc
+	deleted by them: backend/app/__pycache__/models.cpython-39.pyc
+	deleted by them: backend/app/auth/__pycache__/auth.cpython-39.pyc
+	deleted by them: backend/app/auth/__pycache__/two_factor.cpython-39.pyc
+	deleted by them: backend/app/routes/__pycache__/__init__.cpython-39.pyc
+	deleted by them: backend/app/routes/__pycache__/cases.cpython-39.pyc
+	both modified:   frontend/package-lock.json
+	both modified:   frontend/package.json
+
